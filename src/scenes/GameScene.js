@@ -504,12 +504,27 @@ export default class GameScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             text.on('pointerdown', () => {
+                this.sound.play('click', { volume: 0.5 });
+                const oldPopularity = this.popularity;
+                const oldTransparency = this.transparency;
+
                 this.tweens.add({
                     targets: this.optionsContainer,
                     scale: 0.8,
                     alpha: 0,
                     duration: 200,
-                    onComplete: () => opt.action()
+                    onComplete: () => {
+                        const resultMsg = opt.action();
+                        
+                        // Sound feedback based on stats change
+                        if (this.popularity < oldPopularity || this.transparency < oldTransparency) {
+                            this.sound.play('error', { volume: 0.4 });
+                        } else {
+                            this.sound.play('success', { volume: 0.4 });
+                        }
+
+                        this.showMessage(resultMsg);
+                    }
                 });
             });
 

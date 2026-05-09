@@ -52,6 +52,7 @@ export default class TutorialScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.cameras.main;
+        const clickSound = this.sound.add('click', { volume: 0.5 });
         this.bg = this.add.image(width / 2, height / 2, 'town').setDisplaySize(width, height).setAlpha(0.2);
         
         // Guide character (now an animated sprite)
@@ -129,7 +130,10 @@ export default class TutorialScene extends Phaser.Scene {
         
         const hitArea = new Phaser.Geom.Rectangle(-150, -30, 300, 60);
         this.btnContainer.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
-        this.btnContainer.on('pointerdown', () => this.handleNext());
+        this.btnContainer.on('pointerdown', () => {
+            clickSound.play();
+            this.handleNext();
+        });
         this.btnContainer.on('pointerover', () => this.btnContainer.setScale(1.05));
         this.btnContainer.on('pointerout', () => this.btnContainer.setScale(1));
 
@@ -139,6 +143,7 @@ export default class TutorialScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         this.skipBtn.on('pointerdown', () => {
+            clickSound.play();
             window.speechSynthesis.cancel();
             this.scene.start('GameScene');
         });
