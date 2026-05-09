@@ -16,8 +16,12 @@ export default class GameScene extends Phaser.Scene {
 
         // Music (Safe load)
         if (this.cache.audio.exists('music')) {
-            this.music = this.sound.add('music', { loop: true, volume: 0.15 }); // Lower volume for intro
-            this.music.play();
+            try {
+                this.music = this.sound.add('music', { loop: true, volume: 0.15 });
+                this.music.play();
+            } catch (e) {
+                console.error("Could not play music:", e);
+            }
         }
 
         const introSpeech = this.sound.add('petro_intro', { volume: 1 });
@@ -511,7 +515,9 @@ export default class GameScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             text.on('pointerdown', () => {
-                this.sound.play('click', { volume: 0.5 });
+                if (this.cache.audio.exists('click')) {
+                    this.sound.play('click', { volume: 0.5 });
+                }
                 const oldPopularity = this.popularity;
                 const oldTransparency = this.transparency;
 
@@ -524,10 +530,11 @@ export default class GameScene extends Phaser.Scene {
                         const resultMsg = opt.action();
                         
                         // Sound feedback based on stats change
-                        if (this.popularity < oldPopularity || this.transparency < oldTransparency) {
-                            this.sound.play('error', { volume: 0.4 });
-                        } else {
-                            this.sound.play('success', { volume: 0.4 });
+                        const isBad = (this.popularity < oldPopularity || this.transparency < oldTransparency);
+                        const soundKey = isBad ? 'error' : 'success';
+                        
+                        if (this.cache.audio.exists(soundKey)) {
+                            this.sound.play(soundKey, { volume: 0.4 });
                         }
 
                         this.showMessage(resultMsg);

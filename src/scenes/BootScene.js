@@ -32,6 +32,14 @@ export default class BootScene extends Phaser.Scene {
             progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
         });
 
+        this.load.on('filecomplete-audio', (key) => {
+            console.log(`Audio successfully decoded: ${key}`);
+        });
+
+        this.load.on('loaderror', (file) => {
+            console.warn(`Asset failed to load: ${file.key} at ${file.src}`);
+        });
+
         this.load.on('complete', () => {
             progressBar.destroy();
             progressBox.destroy();

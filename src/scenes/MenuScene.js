@@ -8,13 +8,19 @@ export default class MenuScene extends Phaser.Scene {
     create() {
         const { width, height } = this.cameras.main;
 
-        // Background Music
-        if (!this.sound.get('music')) {
-            const music = this.sound.add('music', { loop: true, volume: 0.3 });
-            music.play();
+        // Background Music (Safe load)
+        if (this.cache.audio.exists('music')) {
+            try {
+                if (!this.sound.get('music')) {
+                    const music = this.sound.add('music', { loop: true, volume: 0.3 });
+                    music.play();
+                }
+            } catch (e) {
+                console.error("Music playback failed:", e);
+            }
         }
 
-        const clickSound = this.sound.add('click', { volume: 0.5 });
+        const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
 
         // Background
         const bg = this.add.image(width / 2, height / 2, 'town');
@@ -72,7 +78,7 @@ export default class MenuScene extends Phaser.Scene {
         });
 
         startBtn.on('pointerdown', () => {
-            clickSound.play();
+            if (clickSound) clickSound.play();
             this.cameras.main.fadeOut(500, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
                 this.scene.start('GameScene');
@@ -80,7 +86,7 @@ export default class MenuScene extends Phaser.Scene {
         });
 
         tourBtn.on('pointerdown', () => {
-            clickSound.play();
+            if (clickSound) clickSound.play();
             this.scene.start('TutorialScene');
         });
     }
