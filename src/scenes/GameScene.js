@@ -118,15 +118,35 @@ export default class GameScene extends Phaser.Scene {
         this.scenarios = this.getScenarios();
 
         // Start with Intro Speech and Animation
-        this.petroTalk('petro_intro', () => {
-            // Once speech finishes, show UI and start scenarios
+        const skipBtn = this.add.text(width - 20, 20, 'SALTAR INTRO ⏭', {
+            font: 'bold 16px Outfit',
+            fill: '#ffffff',
+            backgroundColor: '#ef4444',
+            padding: { x: 15, y: 8 }
+        }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setDepth(100);
+
+        const onIntroFinish = () => {
+            if (skipBtn) skipBtn.destroy();
             this.tweens.add({
                 targets: [this.dialogBox, this.titleText, this.mainText],
                 alpha: 1,
                 duration: 500
             });
             this.startNextScenario();
+        };
+
+        this.currentSpeech = null; // Store it to stop it if skipped
+        this.petroTalk('petro_intro', onIntroFinish);
+
+        skipBtn.on('pointerdown', () => {
+            if (this.currentSpeech) this.currentSpeech.stop();
+            // petroTalk completion will trigger onIntroFinish via the speech.on('complete')
+            // but we need to force it if we stopped it manually or if it was already finishing
+            onIntroFinish();
         });
+
+        skipBtn.on('pointerover', () => skipBtn.setStyle({ fill: '#000000', backgroundColor: '#ffffff' }));
+        skipBtn.on('pointerout', () => skipBtn.setStyle({ fill: '#ffffff', backgroundColor: '#ef4444' }));
     }
 
     updateLives() {
@@ -682,8 +702,8 @@ export default class GameScene extends Phaser.Scene {
             return;
         }
 
-        const speech = this.sound.add(audioKey, { volume: 1 });
-        speech.play();
+        this.currentSpeech = this.sound.add(audioKey, { volume: 1 });
+        this.currentSpeech.play();
 
         this.bg.setTexture('office_closed');
         const frames = ['office_closed', 'office_semi', 'office_open', 'office_semi'];
@@ -699,10 +719,17 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
-        speech.on('complete', () => {
+        this.currentSpeech.on('complete', () => {
             talkEvent.remove();
             this.bg.setTexture('office_writing');
             if (onComplete) onComplete();
+            this.currentSpeech = null;
+        });
+
+        this.currentSpeech.on('stop', () => {
+            talkEvent.remove();
+            this.bg.setTexture('office_writing');
+            this.currentSpeech = null;
         });
     }
 }
