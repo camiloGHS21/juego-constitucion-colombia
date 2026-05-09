@@ -46,12 +46,14 @@ export default class GameScene extends Phaser.Scene {
         // Dynamic bottom text bar (redrawn each scenario to fit text)
         this.dialogBox = this.add.graphics();
         this.dialogBox.setDepth(30);
+        this.dialogBox.setAlpha(0); // Hidden initially
 
         this.titleText = this.add.text(width / 2, 0, '', {
             font: 'bold 16px Outfit',
             fill: '#60a5fa'
         }).setOrigin(0.5, 0);
         this.titleText.setDepth(31);
+        this.titleText.setAlpha(0); // Hidden initially
 
         this.mainText = this.add.text(width / 2, 0, '', {
             font: '18px Outfit',
@@ -60,6 +62,7 @@ export default class GameScene extends Phaser.Scene {
             wordWrap: { width: width - 80 }
         }).setOrigin(0.5, 0);
         this.mainText.setDepth(31);
+        this.mainText.setAlpha(0); // Hidden initially
 
         // Options container
         this.optionsContainer = this.add.container(0, 0);
@@ -115,10 +118,13 @@ export default class GameScene extends Phaser.Scene {
         this.scenarios = this.getScenarios();
 
         // Start with Intro Speech and Animation
-        this.petroTalk('petro_intro');
-        
-        // Wait for intro to finish (or at least 3 seconds) before showing the first scenario options
-        this.time.delayedCall(1000, () => {
+        this.petroTalk('petro_intro', () => {
+            // Once speech finishes, show UI and start scenarios
+            this.tweens.add({
+                targets: [this.dialogBox, this.titleText, this.mainText],
+                alpha: 1,
+                duration: 500
+            });
             this.startNextScenario();
         });
     }
@@ -670,8 +676,11 @@ export default class GameScene extends Phaser.Scene {
         this.mainText.setY(height - barH + pad + titleH + spacing);
     }
 
-    petroTalk(audioKey) {
-        if (!this.cache.audio.exists(audioKey)) return;
+    petroTalk(audioKey, onComplete = null) {
+        if (!this.cache.audio.exists(audioKey)) {
+            if (onComplete) onComplete();
+            return;
+        }
 
         const speech = this.sound.add(audioKey, { volume: 1 });
         speech.play();
@@ -693,6 +702,7 @@ export default class GameScene extends Phaser.Scene {
         speech.on('complete', () => {
             talkEvent.remove();
             this.bg.setTexture('office_writing');
+            if (onComplete) onComplete();
         });
     }
 }
