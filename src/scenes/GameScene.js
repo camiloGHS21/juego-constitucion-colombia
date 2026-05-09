@@ -16,12 +16,14 @@ export default class GameScene extends Phaser.Scene {
 
         // Music (Safe load)
         if (this.cache.audio.exists('music')) {
-            this.music = this.sound.add('music', { loop: true, volume: 0.3 });
+            this.music = this.sound.add('music', { loop: true, volume: 0.15 }); // Lower volume for intro
             this.music.play();
         }
 
-        // Background - Petro writing at desk
-        this.bg = this.add.image(width / 2, height / 2, 'office_writing').setDisplaySize(width, height);
+        const introSpeech = this.sound.add('petro_intro', { volume: 1 });
+
+        // Background - Petro at desk
+        this.bg = this.add.image(width / 2, height / 2, 'office_closed').setDisplaySize(width, height);
         this.bg.setDepth(0);
 
         // Contralor - STATIC image, no animation, no jitter, completely hidden at start
@@ -114,12 +116,17 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
-        // Game State for 4-year mandate
         this.currentYear = 1;
         this.scenarioIndex = 0;
         this.scenarios = this.getScenarios();
 
-        this.startNextScenario();
+        // Start with Intro Speech and Animation
+        this.petroTalk('petro_intro');
+        
+        // Wait for intro to finish (or at least 3 seconds) before showing the first scenario options
+        this.time.delayedCall(1000, () => {
+            this.startNextScenario();
+        });
     }
 
     updateLives() {
@@ -664,5 +671,32 @@ export default class GameScene extends Phaser.Scene {
 
         this.titleText.setY(height - barH + pad);
         this.mainText.setY(height - barH + pad + titleH + spacing);
+    }
+
+    petroTalk(audioKey) {
+        if (!this.cache.audio.exists(audioKey)) return;
+
+        const speech = this.sound.add(audioKey, { volume: 1 });
+        speech.play();
+
+        this.bg.setTexture('office_closed');
+        const frames = ['office_closed', 'office_semi', 'office_open', 'office_semi'];
+        let frameIdx = 0;
+
+        // Animation timer: alternate textures every 120ms for a more natural rhythm
+        const talkEvent = this.time.addEvent({
+            delay: 120,
+            callback: () => {
+                frameIdx = (frameIdx + 1) % frames.length;
+                this.bg.setTexture(frames[frameIdx]);
+            },
+            repeat: -1
+        });
+
+        speech.on('complete', () => {
+            talkEvent.remove();
+            this.bg.setTexture('office_writing');
+            if (this.music) this.music.setVolume(0.3); // Restore music volume
+        });
     }
 }
