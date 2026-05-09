@@ -14,16 +14,6 @@ export default class GameScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         this.cameras.main.fadeIn(500, 0, 0, 0);
 
-        // Music (Safe load)
-        if (this.cache.audio.exists('music')) {
-            try {
-                this.music = this.sound.add('music', { loop: true, volume: 0.15 });
-                this.music.play();
-            } catch (e) {
-                console.error("Could not play music:", e);
-            }
-        }
-
         const introSpeech = this.sound.add('petro_intro', { volume: 1 });
 
         // Background - Petro at desk
@@ -703,7 +693,6 @@ export default class GameScene extends Phaser.Scene {
         speech.on('complete', () => {
             talkEvent.remove();
             this.bg.setTexture('office_writing');
-            if (this.music) this.music.setVolume(0.3); // Restore music volume
         });
     }
 }

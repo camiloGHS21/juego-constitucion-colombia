@@ -8,18 +8,6 @@ export default class MenuScene extends Phaser.Scene {
     create() {
         const { width, height } = this.cameras.main;
 
-        // Background Music (Safe load)
-        if (this.cache.audio.exists('music')) {
-            try {
-                if (!this.sound.get('music')) {
-                    const music = this.sound.add('music', { loop: true, volume: 0.3 });
-                    music.play();
-                }
-            } catch (e) {
-                console.error("Music playback failed:", e);
-            }
-        }
-
         const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
 
         // Background
