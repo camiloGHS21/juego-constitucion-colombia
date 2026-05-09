@@ -14,6 +14,10 @@ export default class GameScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         this.cameras.main.fadeIn(500, 0, 0, 0);
 
+        this.currentYear = 1;
+        this.scenarioIndex = 0;
+        this.scenarios = this.getScenarios();
+
         const introSpeech = this.sound.add('petro_intro', { volume: 1 });
 
         // Background - Petro at desk
@@ -41,7 +45,7 @@ export default class GameScene extends Phaser.Scene {
         this.statsText.setDepth(31);
 
         this.livesGroup = this.add.group();
-        this.updateLives();
+        this.updateStats();
 
         // Dynamic bottom text bar (redrawn each scenario to fit text)
         this.dialogBox = this.add.graphics();
@@ -113,11 +117,8 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
-        this.currentYear = 1;
-        this.scenarioIndex = 0;
-        this.scenarios = this.getScenarios();
 
-        // Start with Intro Speech and Animation
+        // Background - Petro at desk
         const skipBtn = this.add.text(width - 20, 20, 'SALTAR INTRO ⏭', {
             font: 'bold 16px Outfit',
             fill: '#ffffff',
