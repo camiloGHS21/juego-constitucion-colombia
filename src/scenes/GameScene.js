@@ -33,14 +33,16 @@ export default class GameScene extends Phaser.Scene {
 
         // Stats panel (top-left, compact)
         this.uiPanel = this.add.graphics();
-        this.uiPanel.fillStyle(0x0f172a, 0.85);
-        this.uiPanel.fillRoundedRect(10, 10, 250, 100, 8);
+        this.uiPanel.fillStyle(0x0f172a, 0.9);
+        this.uiPanel.fillRoundedRect(10, 10, 260, 115, 12);
+        this.uiPanel.lineStyle(2, 0x3b82f6, 1);
+        this.uiPanel.strokeRoundedRect(10, 10, 260, 115, 12);
         this.uiPanel.setDepth(30);
 
         this.statsText = this.add.text(25, 20, '', {
-            font: '14px Outfit',
+            font: 'bold 15px Outfit',
             fill: '#ffffff',
-            lineSpacing: 4
+            lineSpacing: 6
         });
         this.statsText.setDepth(31);
 
@@ -153,7 +155,7 @@ export default class GameScene extends Phaser.Scene {
     updateLives() {
         this.livesGroup.clear(true, true);
         for (let i = 0; i < this.lives; i++) {
-            const heart = this.add.image(25 + (i * 30), 120, 'heart').setDisplaySize(22, 22).setOrigin(0);
+            const heart = this.add.image(25 + (i * 30), 140, 'heart').setDisplaySize(22, 22).setOrigin(0);
             heart.setDepth(31);
             this.livesGroup.add(heart);
         }
@@ -289,12 +291,26 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateStats() {
+        const budgetColor = this.budget < 0 ? '#ff4444' : '#ffffff';
+        const budgetText = this.budget < 0 ? `Presupuesto: $${this.budget}M (Déficit)` : `Presupuesto: $${this.budget}M`;
+
         this.statsText.setText([
             `Año: ${this.currentYear} / 4`,
             `Popularidad: ${this.popularity}%`,
-            `Transparencia: ${this.transparency}%`,
-            `Presupuesto: $${this.budget}M`
+            `Transparencia: ${this.transparency}%`
         ]);
+
+        // We use a separate text for budget to allow different color
+        if (!this.budgetDisplay) {
+            this.budgetDisplay = this.add.text(25, 84, '', {
+                font: 'bold 15px Outfit',
+                fill: '#ffffff'
+            }).setDepth(31);
+        }
+        
+        this.budgetDisplay.setText(budgetText);
+        this.budgetDisplay.setColor(budgetColor);
+
         this.updateLives();
     }
 
@@ -397,9 +413,9 @@ export default class GameScene extends Phaser.Scene {
             titleColor = '#22c55e';
             isVictory = true;
             this.safePlay('success');
-        } else if (this.budget < 0) {
+        } else if (this.budget < -500) {
             title = 'QUIEBRA MUNICIPAL';
-            message = 'Tu municipio ha sido intervenido por el\nGobierno Nacional debido a la falta\nde disciplina fiscal.';
+            message = 'Tu municipio ha superado el límite de deuda permitido.\nEl Ministerio de Hacienda ha intervenido\nla alcaldía por inviabilidad financiera.';
             this.safePlay('error');
         } else {
             title = 'MISIÓN CUMPLIDA';
