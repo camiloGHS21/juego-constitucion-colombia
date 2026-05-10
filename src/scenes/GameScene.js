@@ -194,6 +194,17 @@ export default class GameScene extends Phaser.Scene {
                     { text: 'Copiar el plan de otro municipio cercano', action: () => { this.popularity -= 10; this.transparency -= 30; return 'Falta de originalidad y rigor técnico (Art. 315).'; } }
                 ]
             },
+            // TÍTULO XII - RÉGIMEN ECONÓMICO (332-373)
+            {
+                article: 333,
+                title: 'Año 1 - Título XII: Libertad Económica',
+                text: '(Art. 333) Un grupo de empresarios ofrece comprar la empresa municipal de aseo.',
+                options: [
+                    { text: 'Subastar la concesión con transparencia', action: () => { this.budget += 800; this.transparency += 15; this.popularity -= 5; return 'Ganas recursos respetando la libre competencia (Art. 333).'; } },
+                    { text: 'Entregarlo a dedo a tus aportantes de campaña', action: () => { this.budget += 1200; this.transparency -= 60; this.popularity -= 10; return 'Inyectas capital pero la Procuraduría te tiene en la mira.'; } },
+                    { text: 'Mantenerlo público pese a las pérdidas', action: () => { this.budget -= 300; this.popularity += 10; return 'Priorizas lo público, pero el presupuesto sufre.'; } }
+                ]
+            },
             // TÍTULO X - ORGANISMOS DE CONTROL (267-284)
             {
                 article: 267,
@@ -256,6 +267,16 @@ export default class GameScene extends Phaser.Scene {
                     { text: 'Contratar personal de apoyo adicional (Integridad)', action: () => { this.transparency += 15; this.budget -= 250; return 'Garantizas una logística electoral impecable (Art. 266).'; } }
                 ]
             },
+            {
+                article: 367,
+                title: 'Año 3 - Título XII: Servicios Públicos',
+                text: '(Art. 367) Se requiere ampliar la red eléctrica. Una multinacional ofrece inversión.',
+                options: [
+                    { text: 'Exigir tarifas bajas para estratos 1 y 2', action: () => { this.popularity += 20; this.budget -= 200; return 'Socializas el beneficio económico (Art. 368).'; } },
+                    { text: 'Permitir cobros altos a cambio de regalías', action: () => { this.budget += 1500; this.popularity -= 40; this.transparency -= 10; return 'Gran ingreso de dinero, pero el pueblo protesta.'; } },
+                    { text: 'Usar solo recursos del municipio (Autosuficiencia)', action: () => { this.budget -= 900; this.transparency += 20; return 'Mantienes el control estatal total.'; } }
+                ]
+            },
             // SEGUNDA RONDA DE TÍTULO XI - ENTIDADES TERRITORIALES
             {
                 article: 306,
@@ -312,6 +333,35 @@ export default class GameScene extends Phaser.Scene {
         this.budgetDisplay.setColor(budgetColor);
 
         this.updateLives();
+    }
+
+    showStatChange(popDiff, transDiff, budDiff) {
+        const startX = 280;
+        let startY = 30;
+        const spacing = 22;
+
+        const createFloat = (val, prefix, color) => {
+            if (val === 0) return;
+            const text = val > 0 ? `+${val}${prefix}` : `${val}${prefix}`;
+            const floatText = this.add.text(startX, startY, text, {
+                font: 'bold 16px Outfit',
+                fill: val > 0 ? '#22c55e' : '#ef4444'
+            }).setDepth(100);
+
+            this.tweens.add({
+                targets: floatText,
+                x: startX + 50,
+                alpha: 0,
+                duration: 2000,
+                ease: 'Power2',
+                onComplete: () => floatText.destroy()
+            });
+            startY += spacing;
+        };
+
+        createFloat(popDiff, '% Pop', '#22c55e');
+        createFloat(transDiff, '% Trans', '#22c55e');
+        createFloat(budDiff, 'M Budget', '#22c55e');
     }
 
     startNextScenario() {
@@ -379,9 +429,46 @@ export default class GameScene extends Phaser.Scene {
                 // (Mouth animation removed as we use full background states)
 
                 this.scenarioIndex++;
-                this.time.delayedCall(3000, () => this.startNextScenario());
+                
+                // Check for year end bonus
+                const nextYear = Math.ceil((this.scenarioIndex + 1) / 3);
+                if (nextYear > this.currentYear && this.currentYear < 4) {
+                    this.checkYearEnd();
+                } else {
+                    this.time.delayedCall(3000, () => this.startNextScenario());
+                }
             }
         })));
+    }
+
+    checkYearEnd() {
+        let bonus = 0;
+        let reasons = [];
+
+        if (this.transparency > 70) {
+            bonus += 300;
+            reasons.push('Excelencia en Transparencia: +$300M');
+        }
+        if (this.popularity > 70) {
+            bonus += 200;
+            reasons.push('Alta Aprobación Ciudadana: +$200M');
+        }
+        if (this.budget > 1000) {
+            bonus += 150;
+            reasons.push('Superávit Fiscal (Meta cumplida): +$150M');
+        }
+
+        if (bonus > 0) {
+            this.budget += bonus;
+            const msg = `🎉 CIERRE DE AÑO ${this.currentYear}\nRecibiste incentivos del Gobierno Nacional por tu buena gestión:\n${reasons.join('\n')}`;
+            this.showMessage(msg);
+            this.safePlay('success');
+            this.showStatChange(0, 0, bonus);
+        } else {
+            this.showMessage(`📉 CIERRE DE AÑO ${this.currentYear}\nNo alcanzaste los objetivos de excelencia fiscal.\nSigue trabajando en tu transparencia y popularidad.`);
+        }
+
+        this.time.delayedCall(5000, () => this.startNextScenario());
     }
 
     safePlay(key) {
@@ -560,10 +647,17 @@ export default class GameScene extends Phaser.Scene {
                     alpha: 0,
                     duration: 200,
                     onComplete: () => {
+                        const oldBudget = this.budget;
                         const resultMsg = opt.action();
                         
+                        this.showStatChange(
+                            this.popularity - oldPopularity,
+                            this.transparency - oldTransparency,
+                            this.budget - oldBudget
+                        );
+                        
                         // Sound feedback based on stats change
-                        const isBad = (this.popularity < oldPopularity || this.transparency < oldTransparency);
+                        const isBad = (this.popularity < oldPopularity || this.transparency < oldTransparency || this.budget < oldBudget);
                         const soundKey = isBad ? 'error' : 'success';
                         
                         if (this.cache.audio.exists(soundKey)) {
