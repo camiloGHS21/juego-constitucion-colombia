@@ -7,7 +7,26 @@ export default class GameScene extends Phaser.Scene {
         this.popularity = 50;
         this.transparency = 50;
         this.budget = 1000;
+        this.prevBudget = 1000;
         this.scenarioIndex = 0;
+    }
+
+    showFloatingText(text, x, y, color = '#22c55e') {
+        const floating = this.add.text(x, y, text, {
+            font: 'bold 24px Outfit',
+            fill: color,
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(100);
+
+        this.tweens.add({
+            targets: floating,
+            y: y - 80,
+            alpha: 0,
+            duration: 2000,
+            ease: 'Cubic.easeOut',
+            onComplete: () => floating.destroy()
+        });
     }
 
     create() {
@@ -34,9 +53,9 @@ export default class GameScene extends Phaser.Scene {
         // Stats panel (top-left, compact)
         this.uiPanel = this.add.graphics();
         this.uiPanel.fillStyle(0x0f172a, 0.9);
-        this.uiPanel.fillRoundedRect(10, 10, 260, 115, 12);
+        this.uiPanel.fillRoundedRect(10, 10, 260, 160, 12);
         this.uiPanel.lineStyle(2, 0x3b82f6, 1);
-        this.uiPanel.strokeRoundedRect(10, 10, 260, 115, 12);
+        this.uiPanel.strokeRoundedRect(10, 10, 260, 160, 12);
         this.uiPanel.setDepth(30);
 
         this.statsText = this.add.text(25, 20, '', {
@@ -152,10 +171,54 @@ export default class GameScene extends Phaser.Scene {
         skipBtn.on('pointerout', () => skipBtn.setStyle({ fill: '#ffffff', backgroundColor: '#ef4444' }));
     }
 
+    updateStats() {
+        if (!this.statsText) return;
+
+        this.statsText.setText(
+            `📊 ESTADO DE LA GESTIÓN\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+            `😊 POPULARIDAD: ${Math.max(0, this.popularity)}%\n` +
+            `🔍 TRANSPARENCIA: ${Math.max(0, this.transparency)}%\n` +
+            `💰 PRESUPUESTO: $${this.budget}M\n` +
+            `   VIDA DEL ALCALDE: `
+        );
+        this.updateLives();
+    }
+
+    showStatChange(popDiff, transDiff, budgetDiff) {
+        let delay = 0;
+
+        if (budgetDiff !== 0) {
+            const color = budgetDiff > 0 ? '#22c55e' : '#ef4444';
+            const prefix = budgetDiff > 0 ? '+$' : '-$';
+            this.showFloatingText(`${prefix}${Math.abs(budgetDiff)}M`, 220, 100, color);
+            delay += 250;
+        }
+
+        if (popDiff !== 0) {
+            this.time.delayedCall(delay, () => {
+                const color = popDiff > 0 ? '#22c55e' : '#ef4444';
+                const prefix = popDiff > 0 ? '+' : '';
+                this.showFloatingText(`${prefix}${popDiff}% POP`, 140, 50, color);
+            });
+            delay += 250;
+        }
+
+        if (transDiff !== 0) {
+            this.time.delayedCall(delay, () => {
+                const color = transDiff > 0 ? '#60a5fa' : '#f59e0b';
+                const prefix = transDiff > 0 ? '+' : '';
+                this.showFloatingText(`${prefix}${transDiff}% TRANS`, 140, 80, color);
+            });
+        }
+    }
+
     updateLives() {
         this.livesGroup.clear(true, true);
+        const startX = 180; // Adjusted to follow "VIDA DEL ALCALDE: "
+        const startY = 148; // Significantly lowered to center with the last line
         for (let i = 0; i < this.lives; i++) {
-            const heart = this.add.image(25 + (i * 30), 140, 'heart').setDisplaySize(22, 22).setOrigin(0);
+            const heart = this.add.image(startX + (i * 28), startY, 'heart').setDisplaySize(20, 20).setOrigin(0, 0.5); // Using 0.5 origin for easier vertical centering
             heart.setDepth(31);
             this.livesGroup.add(heart);
         }
@@ -200,9 +263,9 @@ export default class GameScene extends Phaser.Scene {
                 title: 'Año 1 - Título XI: Impuesto Predial',
                 text: '(Art. 317) Solo los municipios pueden gravar la propiedad inmueble. ¿Cómo manejas el impuesto predial?',
                 options: [
-                    { text: 'Cobrar predial justo y destinarlo al ambiente', action: () => { this.popularity += 5; this.transparency += 15; this.budget += 300; return 'Ejerces la potestad tributaria municipal con responsabilidad (Art. 317).'; } },
+                    { text: 'Cobrar predial justo y destinarlo al ambiente', action: () => { this.popularity += 5; this.transparency += 15; this.budget += 400; return 'Ejerces la potestad tributaria municipal con responsabilidad (Art. 317). Recaudas $400M.'; } },
                     { text: 'Exonerar a terratenientes aliados de campaña', action: () => { this.transparency -= 40; this.budget -= 400; return 'Pierdes recursos y la Contraloría detecta favorecimiento ilegal.'; } },
-                    { text: 'Subir el predial al máximo para recaudar más', action: () => { this.popularity -= 30; this.budget += 800; return 'Recaudas más pero el pueblo protesta por la carga fiscal excesiva.'; } }
+                    { text: 'Subir el predial al máximo para recaudar más', action: () => { this.popularity -= 30; this.budget += 1000; return 'Recaudas $1000M, pero el pueblo protesta por la carga fiscal excesiva.'; } }
                 ]
             },
             // TÍTULO X - ORGANISMOS DE CONTROL (267-284)
@@ -311,58 +374,7 @@ export default class GameScene extends Phaser.Scene {
         ];
     }
 
-    updateStats() {
-        const budgetColor = this.budget < 0 ? '#ff4444' : '#ffffff';
-        const budgetText = this.budget < 0 ? `Presupuesto: $${this.budget}M (Déficit)` : `Presupuesto: $${this.budget}M`;
 
-        this.statsText.setText([
-            `Año: ${this.currentYear} / 4`,
-            `Popularidad: ${this.popularity}%`,
-            `Transparencia: ${this.transparency}%`
-        ]);
-
-        // We use a separate text for budget to allow different color
-        if (!this.budgetDisplay) {
-            this.budgetDisplay = this.add.text(25, 84, '', {
-                font: 'bold 15px Outfit',
-                fill: '#ffffff'
-            }).setDepth(31);
-        }
-
-        this.budgetDisplay.setText(budgetText);
-        this.budgetDisplay.setColor(budgetColor);
-
-        this.updateLives();
-    }
-
-    showStatChange(popDiff, transDiff, budDiff) {
-        const startX = 280;
-        let startY = 30;
-        const spacing = 22;
-
-        const createFloat = (val, prefix, color) => {
-            if (val === 0) return;
-            const text = val > 0 ? `+${val}${prefix}` : `${val}${prefix}`;
-            const floatText = this.add.text(startX, startY, text, {
-                font: 'bold 16px Outfit',
-                fill: val > 0 ? '#22c55e' : '#ef4444'
-            }).setDepth(100);
-
-            this.tweens.add({
-                targets: floatText,
-                x: startX + 50,
-                alpha: 0,
-                duration: 2000,
-                ease: 'Power2',
-                onComplete: () => floatText.destroy()
-            });
-            startY += spacing;
-        };
-
-        createFloat(popDiff, '% Pop', '#22c55e');
-        createFloat(transDiff, '% Trans', '#22c55e');
-        createFloat(budDiff, 'M Budget', '#22c55e');
-    }
 
     startNextScenario() {
         if (this.lives <= 0) {

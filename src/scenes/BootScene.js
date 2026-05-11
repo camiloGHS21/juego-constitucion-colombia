@@ -18,7 +18,7 @@ export default class BootScene extends Phaser.Scene {
         const loadingText = this.make.text({
             x: width / 2,
             y: height / 2 - 50,
-            text: 'Cargando Gobierno...',
+            text: 'Cargando Alcaldía...',
             style: {
                 font: '20px Outfit',
                 fill: '#ffffff'
@@ -41,10 +41,15 @@ export default class BootScene extends Phaser.Scene {
         });
 
         this.load.on('complete', () => {
-            progressBar.destroy();
-            progressBox.destroy();
-            loadingText.destroy();
-            this.scene.start('MenuScene');
+            loadingText.setText('Preparando Despacho...');
+            
+            // Give the browser a moment to decode audio
+            this.time.delayedCall(800, () => {
+                progressBar.destroy();
+                progressBox.destroy();
+                loadingText.destroy();
+                this.scene.start('MenuScene');
+            });
         });
 
         this.load.image('office_writing', 'assets/office_petro_writing.png');

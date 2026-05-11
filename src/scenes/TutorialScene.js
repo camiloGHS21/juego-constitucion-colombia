@@ -9,7 +9,7 @@ export default class TutorialScene extends Phaser.Scene {
         this.steps = [
             {
                 title: '¡BIENVENIDO, ALCALDE!',
-                text: 'Soy tu asesora constitucional. Gobernar Risaralda no es solo hacer obras, es cumplir la ley. Para ganar, debes dominar los Títulos IX, X y XI de nuestra Constitución.',
+                text: 'Soy tu asesora constitucional. Liderar la Alcaldía de Risaralda no es solo hacer obras, es cumplir la ley. Para ganar, debes dominar los Títulos IX, X y XI de nuestra Constitución.',
                 image: 'town'
             },
             {
@@ -54,10 +54,10 @@ export default class TutorialScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
         this.bg = this.add.image(width / 2, height / 2, 'town').setDisplaySize(width, height).setAlpha(0.2);
-        
+
         // Guide character (now an animated sprite)
         this.guide = this.add.sprite(width - 220, height - 280, 'guide').setScale(0.75).setOrigin(0.5);
-        
+
         this.anims.create({
             key: 'guide_talk',
             frames: this.anims.generateFrameNumbers('guide', { start: 1, end: 3 }),
@@ -71,7 +71,7 @@ export default class TutorialScene extends Phaser.Scene {
             frames: [{ key: 'guide', frame: 0 }],
             frameRate: 1
         });
-        
+
         this.guide.play('guide_idle');
 
         this.tweens.add({
@@ -83,7 +83,7 @@ export default class TutorialScene extends Phaser.Scene {
             ease: 'Power1.easeInOut'
         });
 
-        
+
 
         this.contentBox = this.add.graphics();
         this.contentBox.fillStyle(0x0f172a, 0.9);
@@ -120,14 +120,14 @@ export default class TutorialScene extends Phaser.Scene {
         this.btnBg = this.add.graphics();
         this.btnBg.fillStyle(0x3b82f6, 1);
         this.btnBg.fillRoundedRect(-150, -30, 300, 60, 10);
-        
+
         this.nextBtnText = this.add.text(0, 0, 'SIGUIENTE >', {
             font: 'bold 24px Outfit',
             fill: '#ffffff'
         }).setOrigin(0.5);
 
         this.btnContainer.add([this.btnBg, this.nextBtnText]);
-        
+
         const hitArea = new Phaser.Geom.Rectangle(-150, -30, 300, 60);
         this.btnContainer.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
         this.btnContainer.on('pointerdown', () => {
@@ -155,7 +155,7 @@ export default class TutorialScene extends Phaser.Scene {
         this.articleTitle = this.add.text(width / 2, 150, '', { font: 'bold 32px Outfit', fill: '#60a5fa' }).setOrigin(0.5).setDepth(101).setAlpha(0);
         this.articleContent = this.add.text(width / 2, 220, '', { font: '20px Outfit', fill: '#ffffff', wordWrap: { width: width - 300 }, lineSpacing: 10 }).setOrigin(0.5, 0).setDepth(101).setAlpha(0);
         this.closeArtBtn = this.add.text(width / 2, height - 150, '[ CERRAR ]', { font: 'bold 24px Outfit', fill: '#94a3b8' }).setOrigin(0.5).setDepth(101).setAlpha(0).setInteractive({ useHandCursor: true });
-        
+
         this.closeArtBtn.on('pointerdown', () => this.hideArticle());
 
         // Ver Artículo Button
@@ -208,12 +208,12 @@ export default class TutorialScene extends Phaser.Scene {
     speak(text) {
         if (this.isMuted) return;
         window.speechSynthesis.cancel();
-        
+
         const utterance = new SpeechSynthesisUtterance(text);
-        
+
         // Find a more human voice (Google voices are usually better)
         const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => 
+        const preferredVoice = voices.find(v =>
             v.lang.includes('es') && (v.name.includes('Google') || v.name.includes('Premium'))
         ) || voices.find(v => v.lang.includes('es'));
 
@@ -231,7 +231,7 @@ export default class TutorialScene extends Phaser.Scene {
         const step = this.steps[this.currentStep];
         this.titleText.setText(step.title);
         this.bg.setTexture(step.image);
-        
+
         // Show/Hide Article Button
         if (step.article) {
             this.articleBtn.setAlpha(1);
@@ -252,11 +252,11 @@ export default class TutorialScene extends Phaser.Scene {
         this.isTyping = true;
         this.descText.setText('');
         this.guide.play('guide_talk');
-        
+
         let charIndex = 0;
-        
+
         if (this.typeTimer) this.typeTimer.remove();
-        
+
         this.typeTimer = this.time.addEvent({
             delay: 25,
             repeat: step.text.length - 1,
@@ -283,7 +283,7 @@ export default class TutorialScene extends Phaser.Scene {
             264: "El Consejo Nacional Electoral (CNE) se compondrá de no menos de siete miembros, elegidos por el Consejo de Estado para un período de 4 años, de ternas elaboradas por los partidos políticos.",
             265: "Funciones del CNE: Inspección y vigilancia electoral, elegir al Registrador, decidir recursos sobre escrutinios y velar por los derechos de la oposición.",
             266: "El Registrador Nacional del Estado Civil será elegido por el Consejo Nacional Electoral para un período de 5 años. Dirige y organiza las elecciones, el registro civil y la identificación de las personas.",
-            
+
             // TÍTULO X - ORGANISMOS DE CONTROL
             267: "El control fiscal vigila la gestión de fondos públicos. Es una función técnica y autónoma de la Contraloría. Se ejerce de forma posterior y selectiva.",
             268: "Atribuciones del Contralor: Prescribir métodos de cuentas, revisar el erario, exigir informes, imponer sanciones y presentar informes al Congreso.",
@@ -294,7 +294,7 @@ export default class TutorialScene extends Phaser.Scene {
             277: "Funciones del Procurador: Vigilar el cumplimiento de la Constitución, proteger derechos humanos, defender intereses sociales y ejercer poder disciplinario.",
             281: "El Defensor del Pueblo forma parte del Ministerio Público y actúa bajo dirección del Procurador.",
             282: "Funciones del Defensor: Orientar a los habitantes en la defensa de sus derechos, divulgar derechos humanos e interponer acciones de tutela y populares.",
-            
+
             // TÍTULO XI - ORGANIZACIÓN TERRITORIAL
             285: "La ley determinará las divisiones del territorio para el cumplimiento de funciones y servicios del Estado.",
             286: "Son entidades territoriales: Departamentos, distritos, municipios y territorios indígenas.",
@@ -319,7 +319,7 @@ export default class TutorialScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         this.articleTitle.setText(`CONSTITUCIÓN POLÍTICA`);
         this.articleContent.setText(articles[num] || 'Cargando contenido oficial...');
-        
+
         this.articleOverlay.clear();
         this.articleOverlay.fillStyle(0x0f172a, 0.98);
         this.articleOverlay.fillRect(0, 0, width, height);
