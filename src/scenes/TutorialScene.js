@@ -279,10 +279,10 @@ export default class TutorialScene extends Phaser.Scene {
             260: "Los ciudadanos eligen directamente a Presidente, Senadores, Representantes, Gobernadores, Diputados, Alcaldes, Concejales y Ediles.",
             261: "Ningún cargo de elección popular tendrá suplente. Las vacancias serán ocupadas por los candidatos no elegidos en la misma lista en orden sucesivo.",
             262: "La elección de Presidente y Vicepresidente no coincidirá con otra. La de Congreso se hará en fecha separada de la de autoridades locales.",
-            263: "Para asegurar la representación proporcional se empleará el sistema de cifra repartidora o cuociente electoral en elecciones de corporaciones públicas.",
-            264: "El Consejo Nacional Electoral (CNE) se compondrá de miembros elegidos por el Congreso para un periodo de 4 años, reflejando la composición política.",
+            263: "Para asegurar la representación proporcional, cuando se vote por dos o más individuos en elección popular o en corporación pública, se empleará el sistema de cuociente electoral.",
+            264: "El Consejo Nacional Electoral (CNE) se compondrá de no menos de siete miembros, elegidos por el Consejo de Estado para un período de 4 años, de ternas elaboradas por los partidos políticos.",
             265: "Funciones del CNE: Inspección y vigilancia electoral, elegir al Registrador, decidir recursos sobre escrutinios y velar por los derechos de la oposición.",
-            266: "El Registrador Nacional organiza las elecciones, el registro civil y la identificación de las personas. Es elegido por las Altas Cortes para 4 años.",
+            266: "El Registrador Nacional del Estado Civil será elegido por el Consejo Nacional Electoral para un período de 5 años. Dirige y organiza las elecciones, el registro civil y la identificación de las personas.",
             
             // TÍTULO X - ORGANISMOS DE CONTROL
             267: "El control fiscal vigila la gestión de fondos públicos. Es una función técnica y autónoma de la Contraloría. Se ejerce de forma posterior y selectiva.",

@@ -65,5 +65,6 @@ export default class BootScene extends Phaser.Scene {
         this.load.audio('success', 'assets/audio/success.mp3');
         this.load.audio('error', 'assets/audio/error.mp3');
         this.load.audio('click', 'assets/audio/click.mp3');
+        this.load.audio('intro', 'assets/audio/intro.mp3');
     }
 }

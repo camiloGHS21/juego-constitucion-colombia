@@ -10,6 +10,17 @@ export default class MenuScene extends Phaser.Scene {
 
         const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
 
+        // Play Intro Audio
+        if (this.cache.audio.exists('intro')) {
+            const introMusic = this.sound.add('intro', { volume: 0.2, loop: true });
+            introMusic.play();
+
+            // Stop music when leaving the scene
+            this.events.on('shutdown', () => {
+                introMusic.stop();
+            });
+        }
+
         // Background
         const bg = this.add.image(width / 2, height / 2, 'town');
         bg.setDisplaySize(width, height);

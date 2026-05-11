@@ -93,7 +93,7 @@ export default class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(51).setAlpha(0);
 
         this.gameOverBtn = null;
-        
+
         // Article Viewer Overlay (hidden initially)
         this.articleOverlay = this.add.graphics();
         this.articleOverlay.setDepth(60);
@@ -101,7 +101,7 @@ export default class GameScene extends Phaser.Scene {
         this.articleTitleText = this.add.text(width / 2, 120, '', { font: 'bold 28px Outfit', fill: '#60a5fa' }).setOrigin(0.5).setDepth(61).setAlpha(0);
         this.articleContentText = this.add.text(width / 2, 170, '', { font: '18px Outfit', fill: '#ffffff', wordWrap: { width: width - 200 }, lineSpacing: 8 }).setOrigin(0.5, 0).setDepth(61).setAlpha(0);
         this.closeArticleBtn = this.add.text(width / 2, height - 100, '[ CERRAR ]', { font: 'bold 22px Outfit', fill: '#94a3b8' }).setOrigin(0.5).setDepth(61).setAlpha(0).setInteractive({ useHandCursor: true });
-        
+
         this.closeArticleBtn.on('pointerdown', () => this.hideArticle());
 
         // Article Button in UI
@@ -111,7 +111,7 @@ export default class GameScene extends Phaser.Scene {
             backgroundColor: '#3b82f6',
             padding: { x: 12, y: 8 }
         }).setOrigin(1, 1).setDepth(35).setInteractive({ useHandCursor: true }).setAlpha(0);
-        
+
         this.articleBtn.on('pointerdown', () => {
             const scenario = this.scenarios[this.scenarioIndex];
             if (scenario && scenario.article) {
@@ -194,15 +194,15 @@ export default class GameScene extends Phaser.Scene {
                     { text: 'Copiar el plan de otro municipio cercano', action: () => { this.popularity -= 10; this.transparency -= 30; return 'Falta de originalidad y rigor técnico (Art. 315).'; } }
                 ]
             },
-            // TÍTULO XII - RÉGIMEN ECONÓMICO (332-373)
+            // TÍTULO XI - RÉGIMEN MUNICIPAL
             {
-                article: 333,
-                title: 'Año 1 - Título XII: Libertad Económica',
-                text: '(Art. 333) Un grupo de empresarios ofrece comprar la empresa municipal de aseo.',
+                article: 317,
+                title: 'Año 1 - Título XI: Impuesto Predial',
+                text: '(Art. 317) Solo los municipios pueden gravar la propiedad inmueble. ¿Cómo manejas el impuesto predial?',
                 options: [
-                    { text: 'Subastar la concesión con transparencia', action: () => { this.budget += 800; this.transparency += 15; this.popularity -= 5; return 'Ganas recursos respetando la libre competencia (Art. 333).'; } },
-                    { text: 'Entregarlo a dedo a tus aportantes de campaña', action: () => { this.budget += 1200; this.transparency -= 60; this.popularity -= 10; return 'Inyectas capital pero la Procuraduría te tiene en la mira.'; } },
-                    { text: 'Mantenerlo público pese a las pérdidas', action: () => { this.budget -= 300; this.popularity += 10; return 'Priorizas lo público, pero el presupuesto sufre.'; } }
+                    { text: 'Cobrar predial justo y destinarlo al ambiente', action: () => { this.popularity += 5; this.transparency += 15; this.budget += 300; return 'Ejerces la potestad tributaria municipal con responsabilidad (Art. 317).'; } },
+                    { text: 'Exonerar a terratenientes aliados de campaña', action: () => { this.transparency -= 40; this.budget -= 400; return 'Pierdes recursos y la Contraloría detecta favorecimiento ilegal.'; } },
+                    { text: 'Subir el predial al máximo para recaudar más', action: () => { this.popularity -= 30; this.budget += 800; return 'Recaudas más pero el pueblo protesta por la carga fiscal excesiva.'; } }
                 ]
             },
             // TÍTULO X - ORGANISMOS DE CONTROL (267-284)
@@ -268,13 +268,13 @@ export default class GameScene extends Phaser.Scene {
                 ]
             },
             {
-                article: 367,
-                title: 'Año 3 - Título XII: Servicios Públicos',
-                text: '(Art. 367) Se requiere ampliar la red eléctrica. Una multinacional ofrece inversión.',
+                article: 287,
+                title: 'Año 3 - Título XI: Autonomía Territorial',
+                text: '(Art. 287) Tu municipio goza de autonomía para gestionar sus intereses. El Gobierno Nacional quiere imponer un proyecto sin consultarte.',
                 options: [
-                    { text: 'Exigir tarifas bajas para estratos 1 y 2', action: () => { this.popularity += 20; this.budget -= 200; return 'Socializas el beneficio económico (Art. 368).'; } },
-                    { text: 'Permitir cobros altos a cambio de regalías', action: () => { this.budget += 1500; this.popularity -= 40; this.transparency -= 10; return 'Gran ingreso de dinero, pero el pueblo protesta.'; } },
-                    { text: 'Usar solo recursos del municipio (Autosuficiencia)', action: () => { this.budget -= 900; this.transparency += 20; return 'Mantienes el control estatal total.'; } }
+                    { text: 'Defender la autonomía municipal con argumentos legales', action: () => { this.popularity += 15; this.transparency += 10; this.budget -= 100; return 'Ejerces tu derecho a gobernarte por autoridades propias (Art. 287).'; } },
+                    { text: 'Aceptar sin negociar para no perder apoyo del centro', action: () => { this.budget += 500; this.popularity -= 20; this.transparency -= 15; return 'Cedes la autonomía territorial que te garantiza la Constitución.'; } },
+                    { text: 'Convocar cabildo abierto para decidir con la comunidad', action: () => { this.popularity += 20; this.budget -= 150; return 'Fortaleces la participación comunitaria y la autonomía (Art. 287).'; } }
                 ]
             },
             // SEGUNDA RONDA DE TÍTULO XI - ENTIDADES TERRITORIALES
@@ -328,7 +328,7 @@ export default class GameScene extends Phaser.Scene {
                 fill: '#ffffff'
             }).setDepth(31);
         }
-        
+
         this.budgetDisplay.setText(budgetText);
         this.budgetDisplay.setColor(budgetColor);
 
@@ -382,7 +382,7 @@ export default class GameScene extends Phaser.Scene {
         this.titleText.setText(scenario.title);
         this.mainText.setText(scenario.text);
         this.redrawDialogBox();
-        
+
         // Show the article button
         this.articleBtn.setAlpha(1);
 
@@ -411,7 +411,7 @@ export default class GameScene extends Phaser.Scene {
                 const oldTransparency = this.transparency;
                 const oldPopularity = this.popularity;
                 const feedback = opt.action();
-                
+
                 // Check for life loss (HARD MODE: 40% threshold)
                 if (this.transparency < 40 || this.popularity < 40) {
                     if (this.transparency < oldTransparency || this.popularity < oldPopularity) {
@@ -429,7 +429,7 @@ export default class GameScene extends Phaser.Scene {
                 // (Mouth animation removed as we use full background states)
 
                 this.scenarioIndex++;
-                
+
                 // Check for year end bonus
                 const nextYear = Math.ceil((this.scenarioIndex + 1) / 3);
                 if (nextYear > this.currentYear && this.currentYear < 4) {
@@ -480,7 +480,7 @@ export default class GameScene extends Phaser.Scene {
     endGame() {
         if (this.music) this.music.stop();
         const { width, height } = this.cameras.main;
-        
+
         let title = '';
         let message = '';
         let titleColor = '#ff4444';
@@ -649,17 +649,17 @@ export default class GameScene extends Phaser.Scene {
                     onComplete: () => {
                         const oldBudget = this.budget;
                         const resultMsg = opt.action();
-                        
+
                         this.showStatChange(
                             this.popularity - oldPopularity,
                             this.transparency - oldTransparency,
                             this.budget - oldBudget
                         );
-                        
+
                         // Sound feedback based on stats change
                         const isBad = (this.popularity < oldPopularity || this.transparency < oldTransparency || this.budget < oldBudget);
                         const soundKey = isBad ? 'error' : 'success';
-                        
+
                         if (this.cache.audio.exists(soundKey)) {
                             this.sound.play(soundKey, { volume: 0.4 });
                         }
@@ -685,7 +685,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.optionsContainer.add([btnBg, text]);
         });
-        
+
         // Appear effect for thought bubble
         this.optionsContainer.setScale(0.5).setAlpha(0);
         this.tweens.add({
@@ -720,11 +720,13 @@ export default class GameScene extends Phaser.Scene {
             260: "Los ciudadanos eligen directamente a Presidente, Senadores, Representantes, Gobernadores, Diputados, Alcaldes, Concejales y Ediles.",
             261: "Ningún cargo de elección popular tendrá suplente. Las vacancias serán ocupadas por los candidatos no elegidos en la misma lista en orden sucesivo.",
             262: "La elección de Presidente y Vicepresidente no coincidirá con otra. La de Congreso se hará en fecha separada de la de autoridades locales.",
-            263: "Para asegurar la representación proporcional se empleará el sistema de cifra repartidora o cuociente electoral en elecciones de corporaciones públicas.",
-            264: "El Consejo Nacional Electoral (CNE) se compondrá de miembros elegidos por el Congreso para un periodo de 4 años, reflejando la composición política.",
-            265: "Funciones del CNE: Inspección y vigilancia electoral, elegir al Registrador, decidir recursos sobre escrutinios y velar por los derechos de la oposición.",
-            266: "El Registrador Nacional organiza las elecciones, el registro civil y la identificación de las personas. Es elegido por las Altas Cortes para 4 años.",
-            
+            263: "Para asegurar la representación proporcional, cuando se vote por dos o más individuos en elección popular o en corporación pública, se empleará el sistema de cuociente electoral.",
+
+            264: "El Consejo Nacional Electoral se compondrá del número de miembros que determine la ley, no menor de siete. Serán elegidos por el Consejo de Estado para un período de cuatro años, de ternas elaboradas por los partidos y movimientos políticos.",
+
+            266: "El Registrador Nacional del Estado Civil será elegido por el Consejo Nacional Electoral para un período de cinco años. Dirige y organiza las elecciones, el registro civil y la identificación de las personas.",
+
+
             // TÍTULO X - ORGANISMOS DE CONTROL
             267: "El control fiscal vigila la gestión de fondos públicos. Es una función técnica y autónoma de la Contraloría. Se ejerce de forma posterior y selectiva.",
             268: "Atribuciones del Contralor: Prescribir métodos de cuentas, revisar el erario, exigir informes, imponer sanciones y presentar informes al Congreso.",
@@ -735,7 +737,7 @@ export default class GameScene extends Phaser.Scene {
             277: "Funciones del Procurador: Vigilar el cumplimiento de la Constitución, proteger derechos humanos, defender intereses sociales y ejercer poder disciplinario.",
             281: "El Defensor del Pueblo forma parte del Ministerio Público y actúa bajo dirección del Procurador.",
             282: "Funciones del Defensor: Orientar a los habitantes en la defensa de sus derechos, divulgar derechos humanos e interponer acciones de tutela y populares.",
-            
+
             // TÍTULO XI - ORGANIZACIÓN TERRITORIAL
             285: "La ley determinará las divisiones del territorio para el cumplimiento de funciones y servicios del Estado.",
             286: "Son entidades territoriales: Departamentos, distritos, municipios y territorios indígenas.",
@@ -751,7 +753,7 @@ export default class GameScene extends Phaser.Scene {
             314: "EL ALCALDE: Jefe de la administración local y representante legal. Es elegido para 3 años y no es reelegible para el periodo siguiente.",
             315: "Atribuciones del Alcalde: Conservar el orden público, dirigir la administración, presentar proyectos de acuerdo y ordenar gastos municipales.",
             317: "Solo los municipios podrán gravar la propiedad inmueble (Impuesto Predial).",
-            318: "Juntas Administradoras Locales (JAL): Dividen municipios en comunas o corregimientos para mejorar la participación y vigilancia local.",
+            318: "Los concejos podrán dividir sus municipios en comunas o corregimientos. En cada una habrá una Junta Administradora Local de elección popular para promover la participación y vigilar asuntos locales.",
             319: "ÁREAS METROPOLITANAS: Municipios con fuertes vínculos pueden organizarse para coordinar desarrollo, servicios públicos y obras comunes.",
             320: "La ley puede establecer categorías de municipios según población, recursos y situación geográfica para definir su régimen.",
             322: "BOGOTÁ D.C.: Tiene un régimen especial como Distrito Capital. Se divide en localidades con sus propias autoridades locales."
@@ -760,7 +762,7 @@ export default class GameScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         this.articleTitleText.setText(`ARTÍCULO ${num}`);
         this.articleContentText.setText(articles[num] || 'Contenido no disponible.');
-        
+
         this.articleOverlay.clear();
         this.articleOverlay.fillStyle(0x0f172a, 0.95);
         this.articleOverlay.fillRect(0, 0, width, height);
@@ -784,17 +786,17 @@ export default class GameScene extends Phaser.Scene {
 
     redrawDialogBox() {
         const { width, height } = this.cameras.main;
-        
+
         // Set wordwrap width to ensure accurate height calculation
         this.mainText.setWordWrapWidth(width - 80);
-        
+
         // Calculate required height based on text content
         const titleH = this.titleText.getBounds().height || 20;
         const textH = this.mainText.getBounds().height || 22;
         const pad = 20;
         const spacing = 10;
         const totalH = titleH + textH + (pad * 2) + spacing;
-        
+
         const barH = Math.max(100, totalH);
 
         this.dialogBox.clear();
