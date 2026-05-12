@@ -115,7 +115,7 @@ export default class MenuScene extends Phaser.Scene {
         });
 
         // ─── SUBTITLE ───
-        const subtitle = this.add.text(width / 2, height / 2 - 38, 'MISIÓN: RISARALDA', {
+        const subtitle = this.add.text(width / 2, height / 2 - 38, '', {
             font: '600 22px Outfit',
             fill: '#60a5fa',
             letterSpacing: 8
