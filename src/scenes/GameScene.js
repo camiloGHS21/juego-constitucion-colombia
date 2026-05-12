@@ -57,6 +57,13 @@ export default class GameScene extends Phaser.Scene {
         this.character.setCrop(716, 550, 200, 254);
 
 
+        // Resume AudioContext on first interaction
+        this.input.once('pointerdown', () => {
+            if (this.sound.context && this.sound.context.state === 'suspended') {
+                this.sound.context.resume();
+            }
+        });
+
         // Contralor - STATIC image
         this.contralorImage = this.add.image(width * 0.18, height * 0.55, 'contralor');
         this.contralorImage.setOrigin(0.5, 0.5);
@@ -403,15 +410,11 @@ export default class GameScene extends Phaser.Scene {
         // Show the article button
         this.articleBtn.setAlpha(1);
 
-        // Contralor ONLY appears during Título X events (Organismos de Control)
-        // Use a more specific check so Título XI doesn't trigger it
-        if (scenario.title.includes('Título X') && !scenario.title.includes('Título XI')) {
+        // Contralor appears during Título X events OR if transparency is critically low (<= 10%)
+        if ((scenario.title.includes('Título X') && !scenario.title.includes('Título XI')) || this.transparency <= 10) {
             this.character.setTexture('office_closed');
             // Smoothly fade in contralor
             this.tweens.add({ targets: this.contralorImage, alpha: 1, duration: 800 });
-            this.time.delayedCall(3000, () => {
-                this.character.setTexture('office_closed');
-            });
         } else {
             // Normal event - Federico talks briefly, then goes back to writing
             this.character.setTexture('office_closed');
@@ -435,6 +438,11 @@ export default class GameScene extends Phaser.Scene {
                 const oldPopularity = this.popularity;
                 const feedback = opt.action();
 
+                // 🕵️ CONTRALOR MECHANIC: If he's watching (trans <= 10) and you drop trans further, you lose!
+                if (oldTransparency <= 10 && this.transparency < oldTransparency) {
+                    this.transparency = 0; // Triggers immediate CORRUPCIÓN TOTAL
+                }
+
                 // Check for life loss (HARD MODE: 40% threshold)
                 if (this.transparency < 40 || this.popularity < 40) {
                     if (this.transparency < oldTransparency || this.popularity < oldPopularity) {
@@ -449,10 +457,17 @@ export default class GameScene extends Phaser.Scene {
                 }
 
                 let finalFeedback = feedback;
+                
+                // Popularity Alerts
                 if (this.popularity <= 10 && oldPopularity > 10) {
                     finalFeedback += "\n\n🚨 ¡ALERTA CRÍTICA!\nTu popularidad es del 10% o menos. Estás al borde de una revocatoria inminente. ¡Debes mejorar tu imagen con urgencia!";
                 } else if (this.popularity < 50 && oldPopularity >= 50) {
                     finalFeedback += "\n\n⚠️ ¡ATENCIÓN ALCALDE!\nTu popularidad ha bajado del 50%. El pueblo empieza a desconfiar de tu gestión.";
+                }
+
+                // Transparency Alerts
+                if (this.transparency <= 10 && oldTransparency > 10) {
+                    finalFeedback += "\n\n🔍 ¡ALERTA DE VIGILANCIA!\nTu transparencia es del 10% o menos. Los organismos de control te tienen bajo la lupa. ¡Cualquier irregularidad será castigada!";
                 }
 
                 this.showMessage(finalFeedback);

@@ -69,7 +69,7 @@ export default class BootScene extends Phaser.Scene {
         // Load Audio Locally
         this.load.audio('success', 'assets/audio/success.mp3');
         this.load.audio('error', 'assets/audio/error.mp3');
-        this.load.audio('click', 'assets/audio/click.mp3');
+        // this.load.audio('click', 'assets/audio/click.mp3'); // File is 0 bytes, causes decoding error
         this.load.audio('intro', 'assets/audio/intro.mp3');
     }
 }

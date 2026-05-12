@@ -86,6 +86,13 @@ export default class TutorialScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
         this.bg = this.add.image(width / 2, height / 2, 'town').setDisplaySize(width, height).setAlpha(0.2);
+        
+        // Resume AudioContext on first interaction
+        this.input.once('pointerdown', () => {
+            if (this.sound.context && this.sound.context.state === 'suspended') {
+                this.sound.context.resume();
+            }
+        });
 
         // Guide character (animated sprite)
         this.guide = this.add.sprite(width - 220, height - 280, 'guide').setScale(0.75).setOrigin(0.5);
@@ -280,16 +287,23 @@ export default class TutorialScene extends Phaser.Scene {
 
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v =>
-            v.lang.includes('es') && (v.name.includes('Google') || v.name.includes('Premium'))
+            v.lang.includes('es') && (
+                v.name.includes('Natural') ||
+                v.name.includes('Helena') ||
+                v.name.includes('Sabina') ||
+                v.name.includes('Google') ||
+                v.name.includes('Premium')
+            )
         ) || voices.find(v => v.lang.includes('es'));
 
         if (preferredVoice) {
             utterance.voice = preferredVoice;
         }
 
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
+        utterance.lang = 'es-MX'; // Mexican Spanish often sounds more natural in these APIs
+        utterance.rate = 1.0;
+        utterance.pitch = 1.05;
+        utterance.volume = 1.0;
         window.speechSynthesis.speak(utterance);
     }
 
