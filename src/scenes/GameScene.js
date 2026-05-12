@@ -411,13 +411,19 @@ export default class GameScene extends Phaser.Scene {
             this.character.setTexture('office_open');
             // Smoothly fade in contralor
             this.tweens.add({ targets: this.contralorImage, alpha: 1, duration: 800 });
+            this.time.delayedCall(3000, () => {
+                this.character.setTexture('office_closed');
+            });
         } else {
             // Normal event - Federico talks briefly, then goes back to writing
             this.character.setTexture('office_open');
             // Always ensure contralor is hidden for non-Título X events
             this.tweens.add({ targets: this.contralorImage, alpha: 0, duration: 300 });
             this.time.delayedCall(3000, () => {
-                this.character.setTexture('office_writing');
+                this.character.setTexture('office_closed');
+                this.time.delayedCall(500, () => {
+                    this.character.setTexture('office_writing');
+                });
             });
         }
 
