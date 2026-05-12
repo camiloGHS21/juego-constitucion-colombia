@@ -1,5 +1,60 @@
 import Phaser from 'phaser';
 import ConstitutionalLexicon from '../components/ConstitutionalLexicon';
+import { ARTICLES } from '../data/Articles';
+
+/**
+ * Generates a short pedagogical summary for each article,
+ * suitable for the guide character to explain to the player.
+ */
+function buildArticleSteps() {
+    const sections = [
+        {
+            title: 'TÍTULO IX: ELECCIONES Y ORGANIZACIÓN ELECTORAL',
+            range: [258, 266],
+            image: 'town'
+        },
+        {
+            title: 'TÍTULO X: ORGANISMOS DE CONTROL',
+            range: [267, 284],
+            image: 'office'
+        },
+        {
+            title: 'TÍTULO XI: ORGANIZACIÓN TERRITORIAL',
+            range: [285, 331],
+            image: 'town'
+        }
+    ];
+
+    const steps = [];
+
+    for (const section of sections) {
+        const [start, end] = section.range;
+        for (let num = start; num <= end; num++) {
+            if (!ARTICLES[num]) continue;
+
+            // Take the first meaningful sentence(s) from the article text as summary
+            const fullText = ARTICLES[num];
+            // Remove the leading "Artículo NNN. " prefix for the summary
+            const bodyText = fullText.replace(/^Artículo\s+\d+\.\s*/, '');
+            // Grab up to ~220 chars at the nearest sentence boundary
+            let summary = bodyText;
+            if (summary.length > 220) {
+                const cut = summary.lastIndexOf('.', 220);
+                summary = cut > 60 ? summary.substring(0, cut + 1) : summary.substring(0, 220) + '…';
+            }
+
+            steps.push({
+                article: num,
+                title: `${section.title}`,
+                subtitle: `Artículo ${num}`,
+                text: summary,
+                image: section.image
+            });
+        }
+    }
+
+    return steps;
+}
 
 export default class TutorialScene extends Phaser.Scene {
     constructor() {
@@ -7,45 +62,21 @@ export default class TutorialScene extends Phaser.Scene {
         this.currentStep = 0;
         this.isTyping = false;
         this.isMuted = false;
+
+        // Build the full list: welcome + all articles + rules
+        const articleSteps = buildArticleSteps();
         this.steps = [
             {
                 title: '¡BIENVENIDO, ALCALDE!',
-                text: 'Soy tu asesora constitucional. Liderar la Alcaldía de Risaralda no es solo hacer obras, es cumplir la ley. Para ganar, debes dominar los Títulos IX, X y XI de nuestra Constitución.',
+                subtitle: 'Guía Constitucional',
+                text: 'Soy tu asesora constitucional. Liderar la Alcaldía no es solo hacer obras, es cumplir la ley. Para ganar, debes dominar los Títulos IX, X y XI de nuestra Constitución. Te explicaré cada artículo uno por uno.',
                 image: 'town'
             },
-            {
-                article: 311,
-                title: 'TÍTULO XI: TERRITORIO',
-                text: 'El municipio es la base del Estado (Art. 311). Como alcalde, diriges la administración y prestas servicios. ¡Tu autonomía está protegida por el Art. 287!',
-                image: 'town'
-            },
-            {
-                article: 313,
-                title: 'TÍTULO XI: EL CONCEJO',
-                text: 'El Concejo Municipal (Art. 313) es tu coequipero legislativo. Ellos reglamentan el suelo y aprueban tus proyectos. ¡Sin ellos no hay Plan de Desarrollo!',
-                image: 'town'
-            },
-            {
-                article: 267,
-                title: 'TÍTULO X: CONTROL FISCAL',
-                text: 'La Contraloría (Art. 267) vigila cada peso. El control fiscal es posterior y selectivo, pero implacable. ¡Rinde cuentas con transparencia!',
-                image: 'office'
-            },
-            {
-                article: 277,
-                title: 'TÍTULO X: MINISTERIO PÚBLICO',
-                text: 'La Procuraduría (Art. 277) vigila tu conducta oficial. La Defensoría (Art. 282) protege los derechos de los ciudadanos. ¡La ética es tu mejor escudo!',
-                image: 'office'
-            },
-            {
-                article: 258,
-                title: 'TÍTULO IX: ELECCIONES',
-                text: 'El voto es un derecho y un deber (Art. 258). Tu mandato se rige por el Voto Programático (Art. 259): debes cumplir el programa que prometiste.',
-                image: 'town'
-            },
+            ...articleSteps,
             {
                 title: 'REGLAS DE ORO',
-                text: 'Tienes 4 años de mandato. Si tu Popularidad o Transparencia bajan del 40%, ¡perderás el cargo! El presupuesto es limitado, úsalo con integridad.',
+                subtitle: '¡A gobernar!',
+                text: 'Tienes 4 años de mandato. Si tu Popularidad o Transparencia bajan del 40%, ¡perderás el cargo! El presupuesto es limitado, úsalo con integridad. ¡Buena suerte, Alcalde!',
                 image: 'town'
             }
         ];
@@ -56,7 +87,7 @@ export default class TutorialScene extends Phaser.Scene {
         const clickSound = this.cache.audio.exists('click') ? this.sound.add('click', { volume: 0.5 }) : null;
         this.bg = this.add.image(width / 2, height / 2, 'town').setDisplaySize(width, height).setAlpha(0.2);
 
-        // Guide character (now an animated sprite)
+        // Guide character (animated sprite)
         this.guide = this.add.sprite(width - 220, height - 280, 'guide').setScale(0.75).setOrigin(0.5);
 
         this.anims.create({
@@ -84,28 +115,47 @@ export default class TutorialScene extends Phaser.Scene {
             ease: 'Power1.easeInOut'
         });
 
-
-
+        // ─── Content box ───
         this.contentBox = this.add.graphics();
         this.contentBox.fillStyle(0x0f172a, 0.9);
-        this.contentBox.fillRoundedRect(100, 100, width - 400, height - 200, 20);
+        this.contentBox.fillRoundedRect(100, 80, width - 400, height - 200, 20);
         this.contentBox.lineStyle(4, 0x3b82f6, 1);
-        this.contentBox.strokeRoundedRect(100, 100, width - 400, height - 200, 20);
+        this.contentBox.strokeRoundedRect(100, 80, width - 400, height - 200, 20);
 
-        this.titleText = this.add.text(150, 180, '', {
-            font: 'bold 42px Outfit',
+        // ─── Section Title (e.g. TÍTULO IX) ───
+        this.titleText = this.add.text(150, 110, '', {
+            font: 'bold 28px Outfit',
             fill: '#3b82f6'
         });
 
-        this.descText = this.add.text(150, 280, '', {
-            font: '24px Outfit',
-            fill: '#ffffff',
-            wordWrap: { width: width - 500 },
-            lineSpacing: 12
+        // ─── Article Subtitle (e.g. Artículo 258) ───
+        this.subtitleText = this.add.text(150, 150, '', {
+            font: 'bold 22px Outfit',
+            fill: '#fbbf24'
         });
 
-        // Speaker Icon / Mute Toggle
-        this.muteBtn = this.add.text(width - 150, 130, '🔊 Voz: ON', {
+        // ─── Body text ───
+        this.descText = this.add.text(150, 200, '', {
+            font: '22px Outfit',
+            fill: '#ffffff',
+            wordWrap: { width: width - 520 },
+            lineSpacing: 10
+        });
+
+        // ─── Progress Bar ───
+        this.progressBarBg = this.add.graphics();
+        this.progressBarBg.fillStyle(0x334155, 1);
+        this.progressBarBg.fillRoundedRect(100, height - 115, width - 400, 14, 7);
+
+        this.progressBarFill = this.add.graphics();
+
+        this.progressText = this.add.text(width / 2 - 100, height - 105, '', {
+            font: '16px Outfit',
+            fill: '#94a3b8'
+        }).setOrigin(0.5, 0);
+
+        // ─── Speaker / Mute Toggle ───
+        this.muteBtn = this.add.text(width - 150, 100, '🔊 Voz: ON', {
             font: '18px Outfit',
             fill: '#ffffff'
         }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
@@ -116,20 +166,42 @@ export default class TutorialScene extends Phaser.Scene {
             if (this.isMuted) window.speechSynthesis.cancel();
         });
 
-        // Buttons
-        this.btnContainer = this.add.container(width / 2 - 100, height - 180);
+        // ─── Previous Button ───
+        this.prevBtnContainer = this.add.container(width / 2 - 120, height - 155);
+        const prevBg = this.add.graphics();
+        prevBg.fillStyle(0x475569, 1);
+        prevBg.fillRoundedRect(-70, -22, 140, 44, 10);
+        const prevText = this.add.text(0, 0, '< ANTERIOR', {
+            font: 'bold 18px Outfit',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+        this.prevBtnContainer.add([prevBg, prevText]);
+        const prevHit = new Phaser.Geom.Rectangle(-70, -22, 140, 44);
+        this.prevBtnContainer.setInteractive(prevHit, Phaser.Geom.Rectangle.Contains);
+        this.prevBtnContainer.on('pointerdown', () => {
+            if (this.currentStep > 0) {
+                if (clickSound) clickSound.play();
+                this.currentStep--;
+                this.updateStep();
+            }
+        });
+        this.prevBtnContainer.on('pointerover', () => this.prevBtnContainer.setScale(1.05));
+        this.prevBtnContainer.on('pointerout', () => this.prevBtnContainer.setScale(1));
+
+        // ─── Next Button ───
+        this.btnContainer = this.add.container(width / 2 + 60, height - 155);
         this.btnBg = this.add.graphics();
         this.btnBg.fillStyle(0x3b82f6, 1);
-        this.btnBg.fillRoundedRect(-150, -30, 300, 60, 10);
+        this.btnBg.fillRoundedRect(-80, -22, 160, 44, 10);
 
         this.nextBtnText = this.add.text(0, 0, 'SIGUIENTE >', {
-            font: 'bold 24px Outfit',
+            font: 'bold 18px Outfit',
             fill: '#ffffff'
         }).setOrigin(0.5);
 
         this.btnContainer.add([this.btnBg, this.nextBtnText]);
 
-        const hitArea = new Phaser.Geom.Rectangle(-150, -30, 300, 60);
+        const hitArea = new Phaser.Geom.Rectangle(-80, -22, 160, 44);
         this.btnContainer.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
         this.btnContainer.on('pointerdown', () => {
             if (clickSound) clickSound.play();
@@ -138,10 +210,11 @@ export default class TutorialScene extends Phaser.Scene {
         this.btnContainer.on('pointerover', () => this.btnContainer.setScale(1.05));
         this.btnContainer.on('pointerout', () => this.btnContainer.setScale(1));
 
-        this.skipBtn = this.add.text(250, height - 180, 'SALTAR TOUR', {
-            font: '20px Outfit',
+        // ─── Skip Button ───
+        this.skipBtn = this.add.text(width - 320, height - 155, 'SALTAR TOUR', {
+            font: '18px Outfit',
             fill: '#94a3b8'
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
 
         this.skipBtn.on('pointerdown', () => {
             if (clickSound) clickSound.play();
@@ -149,14 +222,12 @@ export default class TutorialScene extends Phaser.Scene {
             this.scene.start('GameScene');
         });
 
-
-
-        // Ver Artículo Button
-        this.articleBtn = this.add.text(150, height - 180, '📖 VER ARTÍCULO', {
-            font: 'bold 20px Outfit',
+        // ─── Ver Artículo Button ───
+        this.articleBtn = this.add.text(120, height - 155, '📖 VER ARTÍCULO COMPLETO', {
+            font: 'bold 18px Outfit',
             fill: '#ffffff',
-            backgroundColor: '#3b82f6',
-            padding: { x: 12, y: 8 }
+            backgroundColor: '#1e40af',
+            padding: { x: 10, y: 6 }
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setDepth(30).setAlpha(0);
 
         this.articleBtn.on('pointerdown', () => {
@@ -207,7 +278,6 @@ export default class TutorialScene extends Phaser.Scene {
 
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Find a more human voice (Google voices are usually better)
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v =>
             v.lang.includes('es') && (v.name.includes('Google') || v.name.includes('Premium'))
@@ -218,14 +288,17 @@ export default class TutorialScene extends Phaser.Scene {
         }
 
         utterance.lang = 'es-ES';
-        utterance.rate = 0.9; // Slightly slower for better clarity
+        utterance.rate = 0.9;
         utterance.pitch = 1.0;
         window.speechSynthesis.speak(utterance);
     }
 
     updateStep() {
         const step = this.steps[this.currentStep];
+        const { width, height } = this.cameras.main;
+
         this.titleText.setText(step.title);
+        this.subtitleText.setText(step.subtitle || '');
         this.bg.setTexture(step.image);
 
         // Show/Hide Article Button
@@ -235,11 +308,28 @@ export default class TutorialScene extends Phaser.Scene {
             this.articleBtn.setAlpha(0);
         }
 
+        // Show/Hide previous button
+        this.prevBtnContainer.setAlpha(this.currentStep > 0 ? 1 : 0.3);
+
+        // Update progress bar
+        const progress = (this.currentStep) / (this.steps.length - 1);
+        const barWidth = width - 400;
+        this.progressBarFill.clear();
+        this.progressBarFill.fillStyle(0x3b82f6, 1);
+        this.progressBarFill.fillRoundedRect(100, height - 115, Math.max(14, barWidth * progress), 14, 7);
+        this.progressText.setText(`${this.currentStep + 1} / ${this.steps.length}`);
+
+        // Update button text on last step
         if (this.currentStep === this.steps.length - 1) {
-            this.nextBtnText.setText('¡EMPEZAR MANDATO!');
+            this.nextBtnText.setText('¡EMPEZAR!');
             this.btnBg.clear();
             this.btnBg.fillStyle(0x10b981, 1);
-            this.btnBg.fillRoundedRect(-150, -30, 300, 60, 10);
+            this.btnBg.fillRoundedRect(-80, -22, 160, 44, 10);
+        } else {
+            this.nextBtnText.setText('SIGUIENTE >');
+            this.btnBg.clear();
+            this.btnBg.fillStyle(0x3b82f6, 1);
+            this.btnBg.fillRoundedRect(-80, -22, 160, 44, 10);
         }
 
         this.speak(step.text);
@@ -254,7 +344,7 @@ export default class TutorialScene extends Phaser.Scene {
         if (this.typeTimer) this.typeTimer.remove();
 
         this.typeTimer = this.time.addEvent({
-            delay: 25,
+            delay: 20,
             repeat: step.text.length - 1,
             callback: () => {
                 this.descText.setText(step.text.substr(0, charIndex + 1));
