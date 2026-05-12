@@ -10,6 +10,7 @@ export default class GameScene extends Phaser.Scene {
         this.budget = 1000;
         this.prevBudget = 1000;
         this.scenarioIndex = 0;
+        this.isProcessing = false;
     }
 
     get popularity() { return this._popularity; }
@@ -358,7 +359,7 @@ export default class GameScene extends Phaser.Scene {
                 title: 'Año 4 - Título XI: Regiones Administrativas',
                 text: '(Art. 306) Se propone crear una Región Administrativa con departamentos vecinos.',
                 options: [
-                    { text: 'Apoyar para gestionar proyectos a gran escala', action: () => { this.popularity += 15; this.budget -= 800; return 'Promueves el desarrollo regional (Título XI).'; } },
+                    { text: 'Apoyar para gestionar proyectos a gran escala', action: () => { this.popularity += 15; this.budget -= 400; return 'Promueves el desarrollo regional (Título XI).'; } },
                     { text: 'Oponerse por miedo a perder poder local', action: () => { this.popularity -= 10; return 'Te quedas atrás en la planeación territorial moderna.'; } },
                     { text: 'Pedir más dinero a la Nación para aceptar', action: () => { this.budget += 200; this.transparency -= 10; return 'Negociación fiscal oportunista detectada.'; } }
                 ]
@@ -389,6 +390,7 @@ export default class GameScene extends Phaser.Scene {
 
 
     startNextScenario() {
+        this.isProcessing = false;
         if (this.lives <= 0 || this.budget <= 0 || this.transparency <= 0 || this.popularity <= 0) {
             this.endGame();
             return;
@@ -431,6 +433,9 @@ export default class GameScene extends Phaser.Scene {
         this.createOptions(scenario.options.map(opt => ({
             text: opt.text,
             action: () => {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+
                 this.safePlay('click');
                 // Removed immediate hide here so he stays during the feedback!
 
@@ -505,12 +510,15 @@ export default class GameScene extends Phaser.Scene {
 
         if (bonus > 0) {
             this.budget += bonus;
-            const msg = `🎉 CIERRE DE AÑO ${this.currentYear}\nRecibiste incentivos del Gobierno Nacional por tu buena gestión:\n${reasons.join('\n')}`;
+            const msg = `🎉 CIERRE DE AÑO ${this.currentYear}\nRecibiste incentivos del Gobierno Nacional por tu buena gestión:\n${reasons.join('\n')}\n\n+ $200M (Base SGP)`;
+            this.budget += 200; // Base revenue
             this.showMessage(msg);
             this.safePlay('success');
-            this.showStatChange(0, 0, bonus);
+            this.showStatChange(0, 0, bonus + 200);
         } else {
-            this.showMessage(`📉 CIERRE DE AÑO ${this.currentYear}\nNo alcanzaste los objetivos de excelencia fiscal.\nSigue trabajando en tu transparencia y popularidad.`);
+            this.budget += 200; // Base revenue even if no bonus
+            this.showMessage(`📉 CIERRE DE AÑO ${this.currentYear}\nNo alcanzaste los objetivos de excelencia fiscal.\nRecibes $200M de base (SGP) para continuar.\nSigue trabajando en tu transparencia y popularidad.`);
+            this.showStatChange(0, 0, 200);
         }
 
         this.time.delayedCall(5000, () => this.startNextScenario());
