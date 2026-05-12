@@ -10,6 +10,9 @@ const config = {
     width: 1280,
     height: 720,
     parent: 'game-container',
+    dom: {
+        createContainer: true
+    },
     backgroundColor: '#0f172a',
     scene: [BootScene, MenuScene, TutorialScene, GameScene],
     physics: {
