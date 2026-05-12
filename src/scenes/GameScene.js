@@ -4,13 +4,19 @@ import ConstitutionalLexicon from '../components/ConstitutionalLexicon';
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
-        this.lives = 1;
-        this.popularity = 50;
-        this.transparency = 50;
+        this.lives = 3;
+        this._popularity = 50;
+        this._transparency = 50;
         this.budget = 1000;
         this.prevBudget = 1000;
         this.scenarioIndex = 0;
     }
+
+    get popularity() { return this._popularity; }
+    set popularity(v) { this._popularity = Math.min(100, Math.max(0, v)); }
+
+    get transparency() { return this._transparency; }
+    set transparency(v) { this._transparency = Math.min(100, Math.max(0, v)); }
 
     showFloatingText(text, x, y, color = '#22c55e') {
         const floating = this.add.text(x, y, text, {
@@ -176,8 +182,8 @@ export default class GameScene extends Phaser.Scene {
         this.statsText.setText(
             `📊 ESTADO DE LA GESTIÓN\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
-            `😊 POPULARIDAD: ${Math.max(0, this.popularity)}%\n` +
-            `🔍 TRANSPARENCIA: ${Math.max(0, this.transparency)}%\n` +
+            `😊 POPULARIDAD: ${this.popularity}%\n` +
+            `🔍 TRANSPARENCIA: ${this.transparency}%\n` +
             `💰 PRESUPUESTO: $${this.budget}M\n` +
             `   VIDA DEL ALCALDE: `
         );
@@ -376,7 +382,7 @@ export default class GameScene extends Phaser.Scene {
 
 
     startNextScenario() {
-        if (this.lives <= 0) {
+        if (this.lives <= 0 || this.budget <= 0 || this.transparency <= 0 || this.popularity <= 0) {
             this.endGame();
             return;
         }
@@ -442,7 +448,14 @@ export default class GameScene extends Phaser.Scene {
                     this.safePlay('success');
                 }
 
-                this.showMessage(feedback);
+                let finalFeedback = feedback;
+                if (this.popularity <= 10 && oldPopularity > 10) {
+                    finalFeedback += "\n\n🚨 ¡ALERTA CRÍTICA!\nTu popularidad es del 10% o menos. Estás al borde de una revocatoria inminente. ¡Debes mejorar tu imagen con urgencia!";
+                } else if (this.popularity < 50 && oldPopularity >= 50) {
+                    finalFeedback += "\n\n⚠️ ¡ATENCIÓN ALCALDE!\nTu popularidad ha bajado del 50%. El pueblo empieza a desconfiar de tu gestión.";
+                }
+
+                this.showMessage(finalFeedback);
                 // (Mouth animation removed as we use full background states)
 
                 this.scenarioIndex++;
@@ -507,6 +520,18 @@ export default class GameScene extends Phaser.Scene {
             title = '¡GAME OVER!';
             message = 'Has perdido toda tu credibilidad política.\nLa Procuraduría y el pueblo te han\nretirado del cargo por violar la Constitución.';
             this.safePlay('error');
+        } else if (this.popularity <= 0) {
+            title = '¡REVOCATORIA!';
+            message = 'Tu popularidad ha llegado a cero.\nEl pueblo ha organizado una revocatoria de mandato.\nHas sido destituido por falta de apoyo popular.';
+            this.safePlay('error');
+        } else if (this.transparency <= 0) {
+            title = '¡CORRUPCIÓN TOTAL!';
+            message = 'Tu nivel de transparencia ha llegado a cero.\nLa Fiscalía ha dictado orden de captura inmediata.\nHas sido arrestado por graves actos de corrupción.';
+            this.safePlay('error');
+        } else if (this.budget <= 0) {
+            title = '¡QUIEBRA TOTAL!';
+            message = 'Tu municipio se ha quedado sin presupuesto.\nNo tienes fondos para seguir operando.\nHas sido retirado del cargo por insolvencia.';
+            this.safePlay('error');
         } else if (this.transparency < 40) {
             title = '¡DESTITUCIÓN!';
             message = 'La Procuraduría encontró irregularidades insalvables.\nHas sido inhabilitado para ejercer\ncargos públicos por 20 años.';
@@ -517,10 +542,6 @@ export default class GameScene extends Phaser.Scene {
             titleColor = '#22c55e';
             isVictory = true;
             this.safePlay('success');
-        } else if (this.budget < -500) {
-            title = 'QUIEBRA MUNICIPAL';
-            message = 'Tu municipio ha superado el límite de deuda permitido.\nEl Ministerio de Hacienda ha intervenido\nla alcaldía por inviabilidad financiera.';
-            this.safePlay('error');
         } else {
             title = 'MISIÓN CUMPLIDA';
             message = 'Finalizaste tu mandato de acuerdo a la Constitución.\nDejaste un municipio estable.';
@@ -585,7 +606,7 @@ export default class GameScene extends Phaser.Scene {
             });
 
             btnText.on('pointerdown', () => {
-                this.lives = 1;
+                this.lives = 3;
                 this.popularity = 50;
                 this.transparency = 50;
                 this.budget = 1000;
