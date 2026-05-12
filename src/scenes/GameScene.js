@@ -833,14 +833,20 @@ export default class GameScene extends Phaser.Scene {
 
         this.currentSpeech.on('complete', () => {
             talkEvent.remove();
-            this.character.setTexture('office_writing');
-            if (onComplete) onComplete();
+            this.character.setTexture('office_closed');
+            this.time.delayedCall(600, () => {
+                this.character.setTexture('office_writing');
+                if (onComplete) onComplete();
+            });
             this.currentSpeech = null;
         });
 
         this.currentSpeech.on('stop', () => {
             talkEvent.remove();
-            this.character.setTexture('office_writing');
+            this.character.setTexture('office_closed');
+            this.time.delayedCall(400, () => {
+                this.character.setTexture('office_writing');
+            });
             this.currentSpeech = null;
         });
     }
