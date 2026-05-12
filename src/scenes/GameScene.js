@@ -37,13 +37,20 @@ export default class GameScene extends Phaser.Scene {
         this.scenarioIndex = 0;
         this.scenarios = this.getScenarios();
 
-        const introSpeech = this.sound.add('petro_intro', { volume: 1 });
+        const introSpeech = this.sound.add('intro_speech', { volume: 1 });
 
-        // Background - Petro at desk
+        // Background - Static office
         this.bg = this.add.image(width / 2, height / 2, 'office_closed').setDisplaySize(width, height);
         this.bg.setDepth(0);
 
-        // Contralor - STATIC image, no animation, no jitter, completely hidden at start
+        // Character Layer - Only Federico moves
+        this.character = this.add.image(width / 2, height / 2, 'office_closed').setDisplaySize(width, height);
+        this.character.setDepth(2);
+        // Optimized crop to capture full character body while avoiding flag/window jitter
+        this.character.setCrop(716, 550, 200, 254);
+
+
+        // Contralor - STATIC image
         this.contralorImage = this.add.image(width * 0.18, height * 0.55, 'contralor');
         this.contralorImage.setOrigin(0.5, 0.5);
         this.contralorImage.setScale(0.4);
@@ -139,7 +146,7 @@ export default class GameScene extends Phaser.Scene {
         });
 
 
-        // Background - Petro at desk
+        // Intro Skip Button
         const skipBtn = this.add.text(width - 20, 20, 'SALTAR INTRO ⏭', {
             font: 'bold 16px Outfit',
             fill: '#ffffff',
@@ -158,11 +165,11 @@ export default class GameScene extends Phaser.Scene {
         };
 
         this.currentSpeech = null; // Store it to stop it if skipped
-        this.petroTalk('petro_intro', onIntroFinish);
+        this.federicoTalk('intro_speech', onIntroFinish);
 
         skipBtn.on('pointerdown', () => {
             if (this.currentSpeech) this.currentSpeech.stop();
-            // petroTalk completion will trigger onIntroFinish via the speech.on('complete')
+            // federicoTalk completion will trigger onIntroFinish via the speech.on('complete')
             // but we need to force it if we stopped it manually or if it was already finishing
             onIntroFinish();
         });
@@ -401,16 +408,16 @@ export default class GameScene extends Phaser.Scene {
         // Contralor ONLY appears during Título X events (Organismos de Control)
         // Use a more specific check so Título XI doesn't trigger it
         if (scenario.title.includes('Título X') && !scenario.title.includes('Título XI')) {
-            this.bg.setTexture('office_talking');
+            this.character.setTexture('office_open');
             // Smoothly fade in contralor
             this.tweens.add({ targets: this.contralorImage, alpha: 1, duration: 800 });
         } else {
-            // Normal event - Petro talks briefly, then goes back to writing
-            this.bg.setTexture('office_talking');
+            // Normal event - Federico talks briefly, then goes back to writing
+            this.character.setTexture('office_open');
             // Always ensure contralor is hidden for non-Título X events
             this.tweens.add({ targets: this.contralorImage, alpha: 0, duration: 300 });
             this.time.delayedCall(3000, () => {
-                this.bg.setTexture('office_writing');
+                this.character.setTexture('office_writing');
             });
         }
 
@@ -597,7 +604,7 @@ export default class GameScene extends Phaser.Scene {
         // SHUFFLE OPTIONS to prevent "top-answer" cheating
         const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
 
-        // ── Thought Bubble from Petro's head ──
+        // ── Thought Bubble from Federico's head ──
         const bubbleW = 340;
         const btnH = 48;
         const gap = 12;
@@ -727,73 +734,53 @@ export default class GameScene extends Phaser.Scene {
     showArticle(num) {
         const articles = {
             // TÍTULO IX - ELECCIONES
-            258: "El voto es un derecho y un deber ciudadano. El Estado garantizará que se ejerza de forma secreta en cubículos individuales, con tarjetas electorales numeradas y seguridad.",
-            259: "VOTO PROGRAMÁTICO: Quienes elijan gobernadores y alcaldes, imponen por mandato al elegido el programa que presentó al inscribirse. La ley reglamentará su ejercicio.",
-            260: "Los ciudadanos eligen directamente a Presidente, Senadores, Representantes, Gobernadores, Diputados, Alcaldes, Concejales y Ediles.",
-            261: "Ningún cargo de elección popular tendrá suplente. Las vacancias serán ocupadas por los candidatos no elegidos en la misma lista en orden sucesivo.",
-            262: "La elección de Presidente y Vicepresidente no coincidirá con otra. La de Congreso se hará en fecha separada de la de autoridades locales.",
-            263: "Para asegurar la representación proporcional, cuando se vote por dos o más individuos en elección popular o en corporación pública, se empleará el sistema de cuociente electoral.",
-
-            264: "El Consejo Nacional Electoral se compondrá del número de miembros que determine la ley, no menor de siete. Serán elegidos por el Consejo de Estado para un período de cuatro años, de ternas elaboradas por los partidos y movimientos políticos.",
-
-            266: "El Registrador Nacional del Estado Civil será elegido por el Consejo Nacional Electoral para un período de cinco años. Dirige y organiza las elecciones, el registro civil y la identificación de las personas.",
-
+            258: "Artículo 258.  El voto es un derecho y un deber ciudadano. En todas las elecciones los ciudadanos votarán secretamente en cubículos individuales instalados en cada mesa de votación, con tarjetas electorales numeradas e impresas en papel que ofrezca seguridad, las cuales serán distribuidas oficialmente. La organización electoral suministrará igualitariamente a los votantes instrumentos en los cuales deben aparecer identificados con claridad y en iguales condiciones todos los candidatos. La ley podrá implantar mecanismos de votación que otorguen más y mejores garantías para el libre ejercicio de este derecho de los ciudadanos.",
+            259: "Artículo 259. Quienes elijan gobernadores y alcaldes, imponen por mandato al elegido el programa que presentó al inscribirse como candidato. La ley reglamentará el ejercicio del voto programático.",
+            260: "Artículo 260. Los ciudadanos eligen en forma directa Presidente y Vicepresidente de la República, Senadores, Representantes, Gobernadores, Diputados, Alcaldes, Concejales municipales y distritales, miembros de las juntas administradoras locales.",
+            261: "Artículo 261. Ningún cargo de elección popular en corporaciones públicas tendrá suplente. Las vacancias absolutas serán ocupadas por los candidatos no elegidos en la misma lista, en orden de inscripción, sucesivo y descendente.",
+            262: "Artículo 262. La elección del Presidente y Vicepresidente no podrá coincidir con otra elección. La de Congreso se hará en fecha separada de la elección de autoridades departamentales y municipales.",
+            263: "Artículo 263. Para asegurar la representación proporcional de los partidos, cuando se vote por dos o más individuos en elección popular o en una corporación pública, se empleará el sistema de cuociente electoral.",
+            264: "Artículo 264. El Consejo Nacional Electoral se compondrá del número de miembros que determine la ley, que no debe ser menor de siete. Serán elegidos por el Consejo de Estado para un período de cuatro años, de ternas elaboradas por los partidos y movimientos políticos con personería jurídica.",
+            265: "Artículo 265. El Consejo Nacional Electoral tendrá, de conformidad con la ley, las siguientes atribuciones: 1. Ejercer la suprema inspección y vigilancia de la organización electoral... 8. Reconocer la personería jurídica de los partidos y movimientos políticos.",
+            266: "Artículo 266. El Registrador Nacional del Estado Civil será elegido por el Consejo Nacional Electoral para un período de cinco años... ejercerá las funciones que establezca la ley, incluida la dirección y organización de las elecciones.",
 
             // TÍTULO X - ORGANISMOS DE CONTROL
-            267: "El control fiscal vigila la gestión de fondos públicos. Es una función técnica y autónoma de la Contraloría. Se ejerce de forma posterior y selectiva.",
-            268: "Atribuciones del Contralor: Prescribir métodos de cuentas, revisar el erario, exigir informes, imponer sanciones y presentar informes al Congreso.",
-            269: "Las entidades públicas están obligadas a diseñar y aplicar métodos de control interno según la ley.",
-            270: "La ley organizará sistemas de participación ciudadana para vigilar la gestión pública y sus resultados.",
-            272: "Contralorías Territoriales: Los departamentos y municipios tienen sus propias contralorías para vigilar la gestión fiscal local con autonomía.",
-            275: "El Procurador General es el supremo director del Ministerio Público.",
-            277: "Funciones del Procurador: Vigilar el cumplimiento de la Constitución, proteger derechos humanos, defender intereses sociales y ejercer poder disciplinario.",
-            281: "El Defensor del Pueblo forma parte del Ministerio Público y actúa bajo dirección del Procurador.",
-            282: "Funciones del Defensor: Orientar a los habitantes en la defensa de sus derechos, divulgar derechos humanos e interponer acciones de tutela y populares.",
+            267: "Artículo 267. El control fiscal es una función pública que ejercerá la Contraloría General de la República, la cual vigila la gestión fiscal de la administración y de los particulares o entidades que manejen fondos o bienes de la Nación.",
+            268: "Artículo 268. Atribuciones del Contralor: 1. Prescribir los métodos y la forma de rendir cuentas los responsables del manejo de fondos o bienes de la Nación... 2. Revisar y fenecer las cuentas...",
+            269: "Artículo 269. En las entidades públicas, las autoridades correspondientes están obligadas a diseñar y aplicar, según la naturaleza de sus funciones, métodos y procedimientos de control interno, de conformidad con lo que disponga la ley.",
+            270: "Artículo 270. La ley organizará las formas y los sistemas de participación ciudadana que permitan vigilar la gestión pública que se cumpla en los diversos niveles administrativos y sus resultados.",
+            272: "Artículo 272. La vigilancia de la gestión fiscal de los departamentos, distritos y municipios donde haya contralorías, corresponde a éstas y se ejercerá en forma posterior y selectiva.",
+            275: "Artículo 275. El Procurador General de la Nación es el supremo director del Ministerio Público.",
+            277: "Artículo 277. Funciones del Procurador: 1. Vigilar el cumplimiento de la Constitución, las leyes, las decisiones judiciales y los actos administrativos... 2. Proteger los derechos humanos...",
+            281: "Artículo 281. El Defensor del Pueblo formará parte del Ministerio Público y ejercerá sus funciones bajo la suprema dirección del Procurador General de la Nación.",
+            282: "Artículo 282. Funciones del Defensor: 1. Orientar e instruir a los habitantes... en el ejercicio y defensa de sus derechos... 3. Invocar el derecho de Habeas Corpus e interponer las acciones de tutela...",
 
             // TÍTULO XI - ORGANIZACIÓN TERRITORIAL
-            285: "La ley determinará las divisiones del territorio para el cumplimiento de funciones y servicios del Estado.",
-            286: "Son entidades territoriales: Departamentos, distritos, municipios y territorios indígenas.",
-            287: "AUTONOMÍA: Las entidades territoriales gozan de autonomía para gestionar sus intereses: gobernarse, ejercer competencias y administrar recursos.",
-            288: "La ley orgánica de ordenamiento territorial distribuirá competencias entre Nación y territorios bajo principios de coordinación y concurrencia.",
-            300: "Corresponde a las Asambleas Departamentales: Reglamentar servicios, adoptar planes de desarrollo, decretar tributos y autorizar al Gobernador.",
-            303: "En cada departamento habrá un Gobernador, jefe de la administración seccional y agente del Presidente para el orden público.",
-            305: "Atribuciones del Gobernador: Cumplir la Constitución, dirigir la acción administrativa departamental y nombrar gerentes de entidades descentralizadas.",
-            306: "Regiones Administrativas: Departamentos pueden asociarse para el desarrollo económico y social del territorio.",
-            311: "EL MUNICIPIO: Entidad fundamental que presta servicios públicos, construye obras locales, ordena el territorio y promueve la participación comunitaria.",
-            312: "CONCEJO MUNICIPAL: Corporación administrativa elegida por el pueblo. Sus miembros no son empleados públicos pero pueden recibir honorarios.",
-            313: "Funciones del Concejo: Adoptar planes de desarrollo, autorizar contratos al alcalde, reglamentar usos del suelo y votar tributos locales.",
-            314: "EL ALCALDE: Jefe de la administración local y representante legal. Es elegido para 3 años y no es reelegible para el periodo siguiente.",
-            315: "Atribuciones del Alcalde: Conservar el orden público, dirigir la administración, presentar proyectos de acuerdo y ordenar gastos municipales.",
-            317: "Solo los municipios podrán gravar la propiedad inmueble (Impuesto Predial).",
-            318: "Los concejos podrán dividir sus municipios en comunas o corregimientos. En cada una habrá una Junta Administradora Local de elección popular para promover la participación y vigilar asuntos locales.",
-            319: "ÁREAS METROPOLITANAS: Municipios con fuertes vínculos pueden organizarse para coordinar desarrollo, servicios públicos y obras comunes.",
-            320: "La ley puede establecer categorías de municipios según población, recursos y situación geográfica para definir su régimen.",
-            322: "BOGOTÁ D.C.: Tiene un régimen especial como Distrito Capital. Se divide en localidades con sus propias autoridades locales."
+            285: "Artículo 285. Fuera de la división general del territorio, habrá las que determine la ley para el cumplimiento de las funciones y servicios a cargo del Estado.",
+            286: "Artículo 286. Son entidades territoriales los departamentos, los distritos, los municipios y los territorios indígenas.",
+            287: "Artículo 287. Las entidades territoriales gozan de autonomía para la gestión de sus intereses... tendrán los siguientes derechos: 1. Gobernarse por autoridades propias. 2. Ejercer las competencias que les correspondan.",
+            288: "Artículo 288. La ley orgánica de ordenamiento territorial establecerá la distribución de competencias entre la Nación y las entidades territoriales bajo principios de coordinación, concurrencia y subsidiariedad.",
+            300: "Artículo 300. Corresponde a las Asambleas Departamentales: 1. Reglamentar el ejercicio de las funciones y la prestación de los servicios a cargo del departamento... 3. Adoptar los planes y programas de desarrollo económico y social...",
+            303: "Artículo 303. En cada uno de los departamentos habrá un gobernador que será jefe de la administración seccional y representante legal del Departamento; el gobernador será agente del Presidente de la República para el mantenimiento del orden público.",
+            305: "Artículo 305. Atribuciones del gobernador: 1. Cumplir y hacer cumplir la Constitución, las leyes, los decretos del Gobierno y las ordenanzas... 2. Dirigir y coordinar la acción administrativa del departamento...",
+            306: "Artículo 306. Dos o más departamentos podrán constituirse en regiones administrativas y de planificación, con personería jurídica, autonomía y patrimonio propio. Su objeto principal será el desarrollo económico y social.",
+            311: "Artículo 311. Al municipio como entidad fundamental de la división político-administrativa del Estado le corresponde prestar los servicios públicos que determine la ley, construir las obras que demande el progreso local, ordenar el desarrollo de su territorio.",
+            312: "Artículo 312. En cada municipio habrá una corporación administrativa elegida popularmente para períodos de tres años que se denominará concejo municipal... Los concejales no tendrán la calidad de empleados públicos.",
+            313: "Artículo 313. Corresponde a los concejos: 1. Reglamentar las funciones y la eficiente prestación de los servicios a cargo del municipio... 2. Adoptar los correspondientes planes y programas de desarrollo económico y social...",
+            314: "Artículo 314. En cada municipio habrá un alcalde, jefe de la administración local y representante legal del municipio, que será elegido popularmente para períodos de tres años, no reelegible para el período siguiente.",
+            315: "Artículo 315. Atribuciones del alcalde: 1. Cumplir y hacer cumplir la Constitución, la ley, los decretos del gobierno, las ordenanzas, y los acuerdos del concejo... 2. Conservar el orden público en el municipio...",
+            317: "Artículo 317. Sólo los municipios podrán gravar la propiedad inmueble. Lo anterior no obsta para que otras entidades impongan contribución de valorización.",
+            318: "Artículo 318. Con el fin de mejorar la prestación de los servicios y asegurar la participación de la ciudadanía... los concejos podrán dividir sus municipios en comunas cuando se trate de áreas urbanas, y en corregimientos en el caso de las zonas rurales.",
+            319: "Artículo 319. Cuando dos o más municipios tengan relaciones económicas, sociales y físicas, que den al conjunto características de un área metropolitana, podrán organizarse como entidad administrativa encargada de programar y coordinar el desarrollo.",
+            320: "Artículo 320. La ley podrá establecer categorías de municipios de acuerdo con su población, recursos fiscales, importancia económica y situación geográfica, y señalar distinto régimen para su organización, gobierno y administración.",
+            322: "Artículo 322. Santa Fe de Bogotá, capital de la República y del Departamento de Cundinamarca, se organiza como Distrito Capital... El concejo a iniciativa del alcalde, dividirá el territorio distrital en localidades."
         };
 
-        const { width, height } = this.cameras.main;
-        this.articleTitleText.setText(`ARTÍCULO ${num}`);
-        this.articleContentText.setText(articles[num] || 'Contenido no disponible.');
+        const artText = articles[num] || `Artículo ${num}: Referencia constitucional no disponible.`;
 
-        this.articleOverlay.clear();
-        this.articleOverlay.fillStyle(0x0f172a, 0.95);
-        this.articleOverlay.fillRect(0, 0, width, height);
-        this.articleOverlay.lineStyle(4, 0x3b82f6, 1);
-        this.articleOverlay.strokeRect(50, 50, width - 100, height - 100);
-
-        this.tweens.add({
-            targets: [this.articleOverlay, this.articleTitleText, this.articleContentText, this.closeArticleBtn],
-            alpha: 1,
-            duration: 300
-        });
-    }
-
-    hideArticle() {
-        this.tweens.add({
-            targets: [this.articleOverlay, this.articleTitleText, this.articleContentText, this.closeArticleBtn],
-            alpha: 0,
-            duration: 200
-        });
+        this.titleText.setText(`ARTÍCULO ${num}`);
+        this.mainText.setText(artText);
+        this.redrawDialogBox();
     }
 
     redrawDialogBox() {
@@ -821,7 +808,7 @@ export default class GameScene extends Phaser.Scene {
         this.mainText.setY(height - barH + pad + titleH + spacing);
     }
 
-    petroTalk(audioKey, onComplete = null) {
+    federicoTalk(audioKey, onComplete = null) {
         if (!this.cache.audio.exists(audioKey)) {
             if (onComplete) onComplete();
             return;
@@ -830,7 +817,7 @@ export default class GameScene extends Phaser.Scene {
         this.currentSpeech = this.sound.add(audioKey, { volume: 1 });
         this.currentSpeech.play();
 
-        this.bg.setTexture('office_closed');
+        this.character.setTexture('office_closed');
         const frames = ['office_closed', 'office_semi', 'office_open', 'office_semi'];
         let frameIdx = 0;
 
@@ -839,21 +826,21 @@ export default class GameScene extends Phaser.Scene {
             delay: 120,
             callback: () => {
                 frameIdx = (frameIdx + 1) % frames.length;
-                this.bg.setTexture(frames[frameIdx]);
+                this.character.setTexture(frames[frameIdx]);
             },
             repeat: -1
         });
 
         this.currentSpeech.on('complete', () => {
             talkEvent.remove();
-            this.bg.setTexture('office_writing');
+            this.character.setTexture('office_writing');
             if (onComplete) onComplete();
             this.currentSpeech = null;
         });
 
         this.currentSpeech.on('stop', () => {
             talkEvent.remove();
-            this.bg.setTexture('office_writing');
+            this.character.setTexture('office_writing');
             this.currentSpeech = null;
         });
     }

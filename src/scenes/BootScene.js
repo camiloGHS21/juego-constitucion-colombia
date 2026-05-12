@@ -52,18 +52,18 @@ export default class BootScene extends Phaser.Scene {
             });
         });
 
-        this.load.image('office_writing', 'assets/office_petro_writing.png');
-        this.load.image('office_closed', 'assets/office_petro_closed.png');
-        this.load.image('office_semi', 'assets/office_petro_semi.png');
-        this.load.image('office_open', 'assets/office_petro_open.png');
-        this.load.image('office_talking', 'assets/office_petro_talking.png');
+        this.load.image('office_writing', 'assets/office_federico_writing.png');
+        this.load.image('office_closed', 'assets/office_federico_closed.png');
+        this.load.image('office_semi', 'assets/office_federico_semi.png');
+        this.load.image('office_open', 'assets/office_federico_open.png');
+
         this.load.image('town', 'assets/town.png');
         this.load.image('contralor', 'assets/contralor.png');
         this.load.spritesheet('guide', 'assets/guide_sprite.png', { frameWidth: 256, frameHeight: 1024 });
         this.load.image('heart', 'assets/heart.png');
 
         // Intro Speech
-        this.load.audio('petro_intro', 'assets/audio/petro_intro.mp3');
+        this.load.audio('intro_speech', 'assets/audio/federico_intro.mp3');
 
 
         // Load Audio Locally
